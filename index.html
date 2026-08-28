@@ -15,6 +15,7 @@
       <button data-tab="library">Song Library</button>
       <button data-tab="new-song">New Song</button>
       <button data-tab="release-plan">Release Plan</button>
+      <button data-tab="releases">Releases</button>
       <button data-tab="analytics">Analytics</button>
       <button data-tab="tasks">Tasks</button>
     </nav>
@@ -86,6 +87,39 @@
           DistroKid / streaming link
           <input type="url" id="song-distrokid" />
         </label>
+
+        <hr />
+
+        <label>
+          Post date
+          <input type="date" id="song-date" />
+        </label>
+        <div class="row platform-choose">
+          <label><input type="checkbox" id="platform-youtube-short" checked value="youtube_short"> YouTube Short</label>
+          <label><input type="checkbox" id="platform-youtube-lyric" value="youtube_lyric_video"> YouTube Lyric</label>
+          <label><input type="checkbox" id="platform-instagram" checked value="instagram_reel"> IG Reel</label>
+          <label><input type="checkbox" id="platform-facebook" checked value="facebook_reel"> FB Reel</label>
+          <label><input type="checkbox" id="platform-threads" checked value="threads"> Threads</label>
+        </div>
+        <button type="button" id="suggest-date" class="secondary">Suggest next open date</button>
+
+        <label>
+          YouTube Short video ID
+          <input type="text" id="song-youtube-short-id" placeholder="e.g. dQw4w9WgXcQ" />
+        </label>
+        <label>
+          YouTube Lyric video ID
+          <input type="text" id="song-youtube-lyric-id" placeholder="e.g. dQw4w9WgXcQ" />
+        </label>
+
+        <label>
+          Release
+          <select id="song-release">
+            <option value="__new_single__">New single release</option>
+            <option value="">No release</option>
+          </select>
+        </label>
+
         <button type="submit">Generate Song JSON</button>
       </form>
       <div id="new-song-output" class="output hidden"></div>
@@ -133,6 +167,11 @@
         <button type="submit">Generate AI Prompt</button>
       </form>
       <div id="release-plan-output" class="output hidden"></div>
+    </section>
+
+    <section id="releases" class="tab">
+      <h2>Releases</h2>
+      <div id="release-list"></div>
     </section>
 
     <section id="analytics" class="tab">

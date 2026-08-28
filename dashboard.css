@@ -607,3 +607,85 @@ footer a {
 .analytics-table .video-title a:hover {
   text-decoration: underline;
 }
+
+.platform-choose {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 0.5rem;
+  margin: 0.5rem 0;
+}
+
+.platform-choose label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: #1f2937;
+  padding: 0.5rem;
+  border: 1px solid #374151;
+  border-radius: 0.375rem;
+  cursor: pointer;
+}
+
+.platform-choose input {
+  width: auto;
+  margin: 0;
+}
+
+.release-card {
+  background: #1f2937;
+  border: 1px solid #374151;
+  border-radius: 0.5rem;
+  padding: 1rem;
+  margin-bottom: 1rem;
+}
+
+.release-card .release-header {
+  margin-bottom: 0.5rem;
+}
+
+.release-card h3 {
+  margin: 0;
+  font-size: 1.125rem;
+}
+
+.release-progress {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.release-progress .progress-bar {
+  flex: 1;
+  height: 0.5rem;
+  background: #111827;
+  border-radius: 0.25rem;
+  overflow: hidden;
+}
+
+.release-progress .progress-bar::after {
+  content: '';
+  display: block;
+  height: 100%;
+  background: #3b82f6;
+  width: var(--w, 0%);
+}
+
+#task-list h3,
+#task-list h4 {
+  margin: 1rem 0 0.5rem;
+  color: #e5e7eb;
+}
+
+#task-list h4.release-title {
+  font-size: 1rem;
+  margin-top: 1.25rem;
+}
+
+button.secondary {
+  background: #374151;
+  color: #e5e7eb;
+}
+
+button.secondary:hover {
+  background: #4b5563;
+}

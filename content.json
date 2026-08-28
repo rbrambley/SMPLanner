@@ -23,6 +23,7 @@
       "monetization": "monetizable",
       "ip_note": "Original lyrics, safe IP",
       "status": "Short + full video live",
+      "pipeline_status": "lyric-posted",
       "links": {
         "youtube_short": "",
         "youtube_short_id": "zdZsXknMNR0",
@@ -57,6 +58,7 @@
       "monetization": "monetizable",
       "ip_note": "Original lyrics, safe IP",
       "status": "Short + full video live",
+      "pipeline_status": "lyric-posted",
       "links": {
         "youtube_short": "",
         "youtube_short_id": "f5Ea2wnXRcI",
@@ -88,6 +90,7 @@
       "monetization": "growth-only",
       "ip_note": "References Buc-ee's trademark. Growth-only.",
       "status": "Shorts/Reels only",
+      "pipeline_status": "short-posted",
       "links": {
         "youtube_short": "",
         "youtube_short_id": "eZ5QdDEz57s",
@@ -119,6 +122,7 @@
       "monetization": "growth-only",
       "ip_note": "Spider-Man / Marvel IP. Growth-only.",
       "status": "Short + full video live",
+      "pipeline_status": "lyric-posted",
       "links": {
         "youtube_short": "",
         "youtube_short_id": "pEKMSb9L6J0",
@@ -150,6 +154,7 @@
       "monetization": "monetizable",
       "ip_note": "Original lyrics, safe IP",
       "status": "Short + full video live",
+      "pipeline_status": "lyric-posted",
       "links": {
         "youtube_short": "",
         "youtube_short_id": "_ZYUw14jj_I",
@@ -181,6 +186,7 @@
       "monetization": "growth-only",
       "ip_note": "Topic/brand association. Growth-only to be safe.",
       "status": "Reel + YT Short live",
+      "pipeline_status": "short-posted",
       "links": {
         "youtube_short": "",
         "youtube_short_id": "Bn4Cmx-dJJI",
@@ -212,6 +218,7 @@
       "monetization": "monetizable",
       "ip_note": "Original lyrics, safe IP",
       "status": "Short + full video live",
+      "pipeline_status": "lyric-posted",
       "links": {
         "youtube_short": "",
         "youtube_short_id": "Z-kNWAqN1hY",
@@ -243,6 +250,7 @@
       "monetization": "monetizable",
       "ip_note": "Original lyrics, safe IP",
       "status": "Short + Reel + FB live, GRACKLE lead single",
+      "pipeline_status": "short-posted",
       "links": {
         "youtube_short": "",
         "youtube_short_id": "ZZXL6ikbii8",
@@ -458,5 +466,34 @@
       "#newmusic",
       "#rap"
     ]
-  }
+  },
+  "templates": [
+    {
+      "id": "single-release",
+      "name": "Single Release",
+      "steps": [
+        { "id": "create-short", "label": "Create 9:16 Short hook" },
+        { "id": "create-lyric", "label": "Create lyric video" },
+        { "id": "upload-yt", "label": "Upload to YouTube" },
+        { "id": "upload-ig", "label": "Upload to Instagram" },
+        { "id": "upload-fb", "label": "Upload to Facebook" },
+        { "id": "upload-threads", "label": "Post to Threads" },
+        { "id": "first-comment", "label": "Add first comment with Linktree" },
+        { "id": "set-video-id", "label": "Add YouTube video ID to content.json" },
+        { "id": "reply-comments", "label": "Reply to comments in the first hour" }
+      ]
+    },
+    {
+      "id": "ep-release",
+      "name": "EP / Album Release",
+      "steps": [
+        { "id": "cover-art", "label": "Create cover art" },
+        { "id": "lead-single-short", "label": "Create lead single Short" },
+        { "id": "lead-single-lyric", "label": "Create lead single lyric video" },
+        { "id": "schedule-songs", "label": "Schedule all songs" },
+        { "id": "linktree", "label": "Update Linktree with release links" }
+      ]
+    }
+  ],
+  "releases": []
 }

@@ -6,12 +6,16 @@
   const STORAGE_KEY = 'vmone_dashboard_state';
   let state = { schedule: [], tasks: {} };
   let pendingSong = null;
+  let pendingSchedule = null;
+  let pendingRelease = null;
 
   async function init() {
     try {
       const res = await fetch('content.json?v=' + Date.now(), { cache: 'no-store' });
       if (!res.ok) throw new Error('Could not load content.json');
       data = await res.json();
+      data.templates = data.templates || [];
+      data.releases = data.releases || [];
     } catch (err) {
       showError('Could not load content.json. If you are opening this file locally, run a local server with: python -m http.server');
       return;
@@ -80,11 +84,20 @@
       parseBtn.addEventListener('click', parseAiJson);
     }
 
+    const suggestBtn = document.getElementById('suggest-date');
+    if (suggestBtn) {
+      suggestBtn.addEventListener('click', () => {
+        document.getElementById('song-date').value = getNextAvailableDate();
+      });
+    }
+
     const releaseForm = document.getElementById('release-plan-form');
     releaseForm.addEventListener('submit', (e) => {
       e.preventDefault();
       generateReleasePrompt();
     });
+
+    populateReleaseSelect();
   }
 
   function parseAiJson() {
@@ -147,6 +160,7 @@
     renderToday();
     renderWeek();
     renderLibrary();
+    renderReleases();
     renderAnalytics();
     renderTasks();
     renderProgress();
@@ -196,6 +210,28 @@
 
   function todayStr() {
     return new Date().toISOString().split('T')[0];
+  }
+
+  function getNextAvailableDate() {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    for (let i = 0; i < 365; i++) {
+      const d = new Date(today);
+      d.setDate(today.getDate() + i);
+      const ds = toISODate(d);
+      const existing = data.schedule.find((s) => s.date === ds);
+      if (!existing) return ds;
+    }
+    return toISODate(today);
+  }
+
+  function populateReleaseSelect() {
+    const select = document.getElementById('song-release');
+    if (!select) return;
+    select.innerHTML = '<option value="__new_single__">New single release</option><option value="">No release</option>';
+    data.releases.forEach((rel) => {
+      select.innerHTML += `<option value="${rel.id}">${escapeHtml(rel.title)} (${rel.type})</option>`;
+    });
   }
 
   function copyToClipboard(text, label) {
@@ -616,15 +652,70 @@
     table.innerHTML = html;
   }
 
+  function renderReleases() {
+    const container = document.getElementById('release-list');
+    if (!data.releases || !data.releases.length) {
+      container.innerHTML = '<p class="meta">No releases planned yet. Use New Song or Release Plan to create one.</p>';
+      populateReleaseSelect();
+      return;
+    }
+
+    let html = '';
+    data.releases.forEach((rel) => {
+      const songs = rel.songs.map((sid) => {
+        const song = getSongById(sid);
+        return song ? song.title : sid;
+      }).join(', ');
+      const total = (rel.tasks || []).length;
+      const done = (rel.tasks || []).filter((t) => t.completed).length;
+      html += `
+        <div class="release-card">
+          <div class="release-header">
+            <h3>${escapeHtml(rel.title)} <span class="label">${rel.type}</span></h3>
+            <div class="meta">${rel.startDate}${rel.endDate && rel.endDate !== rel.startDate ? ' – ' + rel.endDate : ''} · ${songs}</div>
+          </div>
+          <div class="release-progress">
+            <div class="progress-bar" style="--w: ${total ? (done / total) * 100 : 0}%" aria-valuenow="${total ? (done / total) * 100 : 0}" aria-valuemin="0" aria-valuemax="100"></div>
+            <span>${done}/${total} complete</span>
+          </div>
+        </div>
+      `;
+    });
+    container.innerHTML = html;
+    populateReleaseSelect();
+  }
+
   function renderTasks() {
     const list = document.getElementById('task-list');
+    if (!list) return;
+
     let html = '';
-    data.tasks.forEach((task) => {
-      const completed = isTaskCompleted(task.id, task.completed);
-      html += `<li><input type="checkbox" class="task-check" data-id="${task.id}" ${completed ? 'checked' : ''}><span class="${completed ? 'completed' : ''}">${task.label}</span></li>`;
-    });
-    list.innerHTML = html;
-    list.className = 'task-list';
+
+    if (data.releases && data.releases.length) {
+      html += '<h3>Release checklists</h3>';
+      data.releases.forEach((rel) => {
+        const total = (rel.tasks || []).length;
+        const done = (rel.tasks || []).filter((t) => t.completed).length;
+        html += `<h4 class="release-title">${escapeHtml(rel.title)} <span class="meta">${done}/${total}</span></h4>`;
+        html += '<ul class="task-list">';
+        (rel.tasks || []).forEach((task) => {
+          const completed = isTaskCompleted(task.id, task.completed);
+          html += `<li><input type="checkbox" class="task-check" data-id="${task.id}" data-release-id="${rel.id}" ${completed ? 'checked' : ''}><span class="${completed ? 'completed' : ''}">${escapeHtml(task.label)}</span></li>`;
+        });
+        html += '</ul>';
+      });
+    }
+
+    if (data.tasks && data.tasks.length) {
+      html += '<h3>Admin tasks</h3><ul class="task-list">';
+      data.tasks.forEach((task) => {
+        const completed = isTaskCompleted(task.id, task.completed);
+        html += `<li><input type="checkbox" class="task-check" data-id="${task.id}" ${completed ? 'checked' : ''}><span class="${completed ? 'completed' : ''}">${task.label}</span></li>`;
+      });
+      html += '</ul>';
+    }
+
+    list.innerHTML = html || '<p class="meta">No tasks yet. Create a new song or release to generate a checklist.</p>';
   }
 
   function renderProgress() {
@@ -640,6 +731,18 @@
     document.getElementById('week-progress').textContent = `${pct}%`;
   }
 
+  function getPostPlatforms() {
+    const defaultPostTimes = data.settings.default_post_times;
+    const platforms = {};
+    document.querySelectorAll('.platform-choose input:checked').forEach((input) => {
+      const key = input.value;
+      if (defaultPostTimes[key]) {
+        platforms[key] = defaultPostTimes[key];
+      }
+    });
+    return platforms;
+  }
+
   function generateNewSongJson() {
     const title = document.getElementById('song-title').value.trim();
     const genres = document.getElementById('song-genres').value.split(',').map((s) => s.trim()).filter(Boolean);
@@ -650,6 +753,10 @@
     const monetization = document.getElementById('song-monetization').value;
     const ip = document.getElementById('song-ip').value.trim();
     const distrokid = document.getElementById('song-distrokid').value.trim();
+    const postDate = document.getElementById('song-date').value || getNextAvailableDate();
+    const shortId = document.getElementById('song-youtube-short-id').value.trim();
+    const lyricId = document.getElementById('song-youtube-lyric-id').value.trim();
+    const releaseSelect = document.getElementById('song-release').value;
 
     const id = title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
     const song = {
@@ -663,23 +770,71 @@
       monetization,
       ip_note: ip || undefined,
       status: 'Planned',
+      pipeline_status: 'planned',
       links: {
         youtube_short: '',
+        youtube_short_id: shortId,
+        youtube_lyric_id: lyricId,
         distrokid
       }
     };
     const pkgs = generateSongPackages(song);
     pendingSong = song;
 
+    const platforms = getPostPlatforms();
+    pendingSchedule = {
+      date: postDate,
+      song_id: id,
+      platforms,
+      hook_index: 0,
+      completed: {}
+    };
+
+    pendingRelease = null;
+    if (releaseSelect === '__new_single__') {
+      const template = data.templates.find((t) => t.id === 'single-release');
+      const steps = template ? template.steps : [
+        { id: 'create-short', label: 'Create 9:16 Short hook' },
+        { id: 'upload-yt', label: 'Upload to YouTube' }
+      ];
+      const releaseId = `single-${id}`;
+      pendingRelease = {
+        id: releaseId,
+        title,
+        type: 'Single',
+        status: 'planned',
+        songs: [id],
+        startDate: postDate,
+        endDate: postDate,
+        notes: '',
+        tasks: steps.map((step, index) => ({
+          id: `${releaseId}-${index}`,
+          templateId: step.id,
+          label: step.label,
+          completed: false,
+          song_id: id
+        }))
+      };
+      song.release_id = releaseId;
+      pendingSchedule.release_id = releaseId;
+    } else if (releaseSelect) {
+      song.release_id = releaseSelect;
+      pendingSchedule.release_id = releaseSelect;
+    }
+
     const out = document.getElementById('new-song-output');
     out.classList.remove('hidden');
     out.innerHTML = `
-      <h3>Song JSON</h3>
+      <h3>Song</h3>
       <pre>${escapeHtml(JSON.stringify(song, null, 2))}</pre>
       <button class="copy" data-label="song JSON">Copy Song JSON</button>
-      <button class="save-song" id="save-song-to-json">Add to content.json and save</button>
+      <h3>Schedule</h3>
+      <pre>${escapeHtml(JSON.stringify(pendingSchedule, null, 2))}</pre>
+      <h3>Release</h3>
+      <pre>${escapeHtml(JSON.stringify(pendingRelease, null, 2) || 'none')}</pre>
       <h3>Packages</h3>
       <pre>${escapeHtml(JSON.stringify(pkgs, null, 2))}</pre>
+      <button class="save-song" id="save-song-to-json">Add to content.json and save</button>
     `;
   }
 
@@ -724,6 +879,13 @@
         task.completed = state.tasks[task.id];
       }
     });
+    (merged.releases || []).forEach((rel) => {
+      (rel.tasks || []).forEach((task) => {
+        if (typeof state.tasks[task.id] === 'boolean') {
+          task.completed = state.tasks[task.id];
+        }
+      });
+    });
     return merged;
   }
 
@@ -755,10 +917,29 @@
       data.songs.push(pendingSong);
     }
 
-    renderToday();
-    renderWeek();
-    renderLibrary();
-    renderProgress();
+    if (pendingSchedule) {
+      const existingSchedule = data.schedule.findIndex((s) => s.song_id === pendingSchedule.song_id && s.date === pendingSchedule.date);
+      if (existingSchedule >= 0) {
+        data.schedule[existingSchedule] = pendingSchedule;
+      } else {
+        data.schedule.push(pendingSchedule);
+      }
+    }
+
+    if (pendingRelease) {
+      const existingRelease = data.releases.findIndex((r) => r.id === pendingRelease.id);
+      if (existingRelease >= 0) {
+        data.releases[existingRelease] = pendingRelease;
+      } else {
+        data.releases.push(pendingRelease);
+      }
+    }
+
+    pendingSong = null;
+    pendingSchedule = null;
+    pendingRelease = null;
+
+    renderAll();
 
     const json = getMergedJson();
 
