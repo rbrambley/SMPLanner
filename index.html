@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>VMOne Dashboard</title>
+  <link rel="stylesheet" href="dashboard.css" />
+</head>
+<body>
+  <header>
+    <h1>VMOne Dashboard</h1>
+    <nav>
+      <button data-tab="today" class="active">Today</button>
+      <button data-tab="week">This Week</button>
+      <button data-tab="library">Song Library</button>
+      <button data-tab="new-song">New Song</button>
+      <button data-tab="release-plan">Release Plan</button>
+      <button data-tab="tasks">Tasks</button>
+    </nav>
+    <div class="progress">
+      <span id="week-progress">0%</span> of this week complete
+    </div>
+  </header>
+
+  <main>
+    <section id="today" class="tab active"></section>
+
+    <section id="week" class="tab">
+      <h2>This Week</h2>
+      <div id="week-list"></div>
+    </section>
+
+    <section id="library" class="tab">
+      <h2>Song Library</h2>
+      <div id="song-library"></div>
+    </section>
+
+    <section id="new-song" class="tab">
+      <h2>New Song</h2>
+      <form id="new-song-form">
+        <label>
+          Paste AI JSON here
+          <textarea id="ai-json-paste" rows="8" placeholder="Paste the full JSON the AI returned... if it contains multiple tracks, the first track will be used."></textarea>
+        </label>
+        <button type="button" id="parse-ai-json">Parse AI JSON</button>
+
+        <hr />
+
+        <label>
+          Title
+          <input type="text" id="song-title" required />
+        </label>
+        <label>
+          Genres (comma separated)
+          <input type="text" id="song-genres" value="rap" />
+        </label>
+        <label>
+          Title Card (big text first 1-2 seconds)
+          <input type="text" id="song-title-card" required />
+        </label>
+        <label>
+          Hook (one catchiest line)
+          <textarea id="song-hook" rows="2" required></textarea>
+        </label>
+        <label>
+          Lyrics or full chorus
+          <textarea id="song-lyrics" rows="6"></textarea>
+        </label>
+        <label>
+          Notes / angle
+          <input type="text" id="song-notes" />
+        </label>
+        <label>
+          Monetization
+          <select id="song-monetization">
+            <option value="monetizable">Monetizable</option>
+            <option value="growth-only">Growth-only</option>
+          </select>
+        </label>
+        <label>
+          IP / brand note
+          <input type="text" id="song-ip" />
+        </label>
+        <label>
+          DistroKid / streaming link
+          <input type="url" id="song-distrokid" />
+        </label>
+        <button type="submit">Generate Song JSON</button>
+      </form>
+      <div id="new-song-output" class="output hidden"></div>
+    </section>
+
+    <section id="release-plan" class="tab">
+      <h2>Release Plan</h2>
+      <form id="release-plan-form">
+        <label>
+          Release type
+          <select id="release-type">
+            <option value="single">Single</option>
+            <option value="ep">EP</option>
+            <option value="album">Album</option>
+          </select>
+        </label>
+        <label>
+          Concept or story
+          <input type="text" id="release-concept" required />
+        </label>
+        <label>
+          Genre
+          <input type="text" id="release-genre" required />
+        </label>
+        <label>
+          Moods (comma separated)
+          <input type="text" id="release-moods" required />
+        </label>
+        <label>
+          Number of tracks
+          <input type="number" id="release-tracks" min="1" max="15" value="1" required />
+        </label>
+        <label>
+          Theme words or imagery
+          <input type="text" id="release-themes" />
+        </label>
+        <label>
+          Reference artists or songs
+          <input type="text" id="release-references" />
+        </label>
+        <label>
+          Avoid / IP restrictions
+          <input type="text" id="release-avoid" />
+        </label>
+        <button type="submit">Generate AI Prompt</button>
+      </form>
+      <div id="release-plan-output" class="output hidden"></div>
+    </section>
+
+    <section id="tasks" class="tab">
+      <h2>Tasks</h2>
+      <ul id="task-list"></ul>
+    </section>
+  </main>
+
+  <footer>
+    <p>Linktree: <a href="https://linktr.ee/vmetcone" target="_blank">linktr.ee/vmetcone</a></p>
+    <p><a href="#" id="download-json">Download updated content.json</a></p>
+  </footer>
+
+  <script src="dashboard.js"></script>
+</body>
+</html>

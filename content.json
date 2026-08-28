@@ -1,0 +1,231 @@
+{
+  "artist": {
+    "name": "VMOne",
+    "handle_youtube": "vmetcone",
+    "handle_instagram": "vm.one.etc",
+    "handle_facebook": "vmetcone.rich",
+    "handle_suno": "vmetcone",
+    "handle_threads": "vm.one.etc",
+    "linktree": "https://linktr.ee/vmetcone"
+  },
+  "songs": [
+    {
+      "id": "the-macaw",
+      "title": "The Macaw",
+      "genres": ["rap"],
+      "title_card": "my macaw talks back",
+      "hooks": [
+        "He’s a Macaw in the sun / Talks back, but he don’t talk back to just anyone"
+      ],
+      "notes": "Strong parrot/pet niche.",
+      "monetization": "monetizable",
+      "ip_note": "Original lyrics, safe IP",
+      "status": "Short + full video live",
+      "links": {
+        "youtube_short": "",
+        "distrokid": "https://distrokid.com/hyperfollow/vmone/the-macaw?ref=release"
+      }
+    },
+    {
+      "id": "woo-problem",
+      "title": "Woo Problem",
+      "genres": ["club rap", "hip hop", "dance", "humor"],
+      "title_card": "Suno won’t stop saying WOO",
+      "hooks": [
+        "Suno won’t stop saying WOO / Every drop hits like the bass in the room"
+      ],
+      "notes": "AI/humor angle.",
+      "monetization": "monetizable",
+      "ip_note": "Original lyrics, safe IP",
+      "status": "Short + full video live",
+      "links": {
+        "youtube_short": "",
+        "distrokid": ""
+      }
+    },
+    {
+      "id": "buc-ees",
+      "title": "Everybody In The Truck Get Buc-ee’s",
+      "genres": ["country/hip-hop"],
+      "title_card": "if you see this sign, we’re pulling over",
+      "hooks": [
+        "Everybody in the truck get Buc-ee’s / If you see the sign, we’re pulling over"
+      ],
+      "notes": "Trademark risk — do not monetize.",
+      "monetization": "growth-only",
+      "ip_note": "References Buc-ee's trademark. Growth-only.",
+      "status": "Shorts/Reels only",
+      "links": {
+        "youtube_short": "",
+        "distrokid": ""
+      }
+    },
+    {
+      "id": "brand-new-day",
+      "title": "Brand New Day (You Didn’t Ask for My Review)",
+      "genres": ["rap"],
+      "title_card": "Brand New Day — hype is loud",
+      "hooks": [
+        "Brand New Day — the hype is loud, the energy’s insane / Webs slicing through the skyline like lightning in the rain"
+      ],
+      "notes": "Spider-Man IP, growth-only.",
+      "monetization": "growth-only",
+      "ip_note": "Spider-Man / Marvel IP. Growth-only.",
+      "status": "Short + full video live",
+      "links": {
+        "youtube_short": "",
+        "distrokid": ""
+      }
+    },
+    {
+      "id": "its-real",
+      "title": "It’s Real",
+      "genres": ["rap"],
+      "title_card": "when the rent is due and the phone is on 1%",
+      "hooks": [
+        "It’s real when the rent is due and the phone is on 1%"
+      ],
+      "notes": "Everyday life/relatable angle.",
+      "monetization": "monetizable",
+      "ip_note": "Original lyrics, safe IP",
+      "status": "Short + full video live",
+      "links": {
+        "youtube_short": "",
+        "distrokid": ""
+      }
+    },
+    {
+      "id": "signal-in-signal-out",
+      "title": "Signal In, Signal Out (Skinwalker Ranch)",
+      "genres": ["rap"],
+      "title_card": "Skinwalker Ranch in 15 seconds",
+      "hooks": [
+        "Signal in, signal out, something weird is going down"
+      ],
+      "notes": "Brand/topic attention but original lyrics.",
+      "monetization": "growth-only",
+      "ip_note": "Topic/brand association. Growth-only to be safe.",
+      "status": "Reel + YT Short live",
+      "links": {
+        "youtube_short": "",
+        "distrokid": ""
+      }
+    },
+    {
+      "id": "dirty-dac",
+      "title": "Dirty Dac (Dacula)",
+      "genres": ["rap"],
+      "title_card": "slide through Dac with the tint real black",
+      "hooks": [
+        "Slide through Dac with the tint real black"
+      ],
+      "notes": "Hometown/small town niche.",
+      "monetization": "monetizable",
+      "ip_note": "Original lyrics, safe IP",
+      "status": "Short + full video live",
+      "links": {
+        "youtube_short": "",
+        "distrokid": ""
+      }
+    },
+    {
+      "id": "night-shift-halo",
+      "title": "Night Shift Halo",
+      "genres": ["rap rock"],
+      "title_card": "the night shift anthem",
+      "hooks": [
+        "Night shift halo, I’m still running on no sleep"
+      ],
+      "notes": "From new GRACKLE album. Lead single.",
+      "monetization": "monetizable",
+      "ip_note": "Original lyrics, safe IP",
+      "status": "Short + Reel + FB live, GRACKLE lead single",
+      "links": {
+        "youtube_short": "",
+        "distrokid": "https://distrokid.com/hyperfollow/vmone/grackle?ref=release"
+      }
+    }
+  ],
+  "schedule": [
+    {
+      "date": "2026-08-22",
+      "song_id": "the-macaw",
+      "platforms": { "youtube_short": "20:00", "youtube_lyric_video": null, "instagram_reel": "19:00", "facebook_reel": "19:00", "threads": "19:00" },
+      "hook_index": 0,
+      "completed": { "youtube_short": true, "youtube_lyric_video": false, "instagram_reel": true, "facebook_reel": true, "threads": true }
+    },
+    {
+      "date": "2026-08-23",
+      "song_id": "its-real",
+      "platforms": { "youtube_short": "20:00", "youtube_lyric_video": null, "instagram_reel": "20:00", "facebook_reel": "20:00", "threads": "20:00" },
+      "hook_index": 0,
+      "completed": { "youtube_short": true, "youtube_lyric_video": false, "instagram_reel": true, "facebook_reel": true, "threads": true }
+    },
+    {
+      "date": "2026-08-24",
+      "song_id": "woo-problem",
+      "platforms": { "youtube_short": "20:00", "youtube_lyric_video": null, "instagram_reel": "20:00", "facebook_reel": "20:00", "threads": "20:00" },
+      "hook_index": 0,
+      "completed": { "youtube_short": true, "youtube_lyric_video": false, "instagram_reel": true, "facebook_reel": true, "threads": true }
+    },
+    {
+      "date": "2026-08-25",
+      "song_id": "signal-in-signal-out",
+      "platforms": { "youtube_short": "20:00", "youtube_lyric_video": null, "instagram_reel": "20:00", "facebook_reel": "20:00", "threads": "20:00" },
+      "hook_index": 0,
+      "completed": { "youtube_short": true, "youtube_lyric_video": false, "instagram_reel": true, "facebook_reel": true, "threads": true }
+    },
+    {
+      "date": "2026-08-26",
+      "song_id": "buc-ees",
+      "platforms": { "youtube_short": "20:00", "youtube_lyric_video": null, "instagram_reel": "20:00", "facebook_reel": "20:00", "threads": "20:00" },
+      "hook_index": 0,
+      "completed": { "youtube_short": true, "youtube_lyric_video": false, "instagram_reel": true, "facebook_reel": true, "threads": true }
+    },
+    {
+      "date": "2026-08-27",
+      "song_id": "night-shift-halo",
+      "platforms": { "youtube_short": "20:00", "youtube_lyric_video": null, "instagram_reel": "20:00", "facebook_reel": "12:30", "threads": "20:00" },
+      "hook_index": 0,
+      "completed": { "youtube_short": false, "youtube_lyric_video": false, "instagram_reel": false, "facebook_reel": false, "threads": false }
+    },
+    {
+      "date": "2026-08-28",
+      "song_id": "dirty-dac",
+      "platforms": { "youtube_short": "20:00", "youtube_lyric_video": null, "instagram_reel": "20:00", "facebook_reel": "12:30", "threads": "20:00" },
+      "hook_index": 0,
+      "completed": { "youtube_short": false, "youtube_lyric_video": false, "instagram_reel": false, "facebook_reel": false, "threads": false }
+    },
+    {
+      "date": "2026-08-29",
+      "song_id": "brand-new-day",
+      "platforms": { "youtube_short": "20:00", "youtube_lyric_video": null, "instagram_reel": "20:00", "facebook_reel": "12:30", "threads": "20:00" },
+      "hook_index": 0,
+      "completed": { "youtube_short": false, "youtube_lyric_video": false, "instagram_reel": false, "facebook_reel": false, "threads": false }
+    }
+  ],
+  "tasks": [
+    { "id": "setup-linktree", "label": "Set up Linktree with all links", "completed": true },
+    { "id": "post-14-shorts", "label": "Post 14 Shorts in first month", "completed": false },
+    { "id": "daily-engagement", "label": "Engage 10–15 similar accounts daily", "completed": false },
+    { "id": "weekly-analytics", "label": "Review analytics every Sunday", "completed": false },
+    { "id": "batch-create", "label": "Batch create 3–4 Shorts on Monday", "completed": false }
+  ],
+  "settings": {
+    "default_post_times": {
+      "youtube_short": "20:00",
+      "youtube_lyric_video": "19:00",
+      "instagram_reel": "20:00",
+      "facebook_reel": "12:30",
+      "threads": "20:00"
+    },
+    "default_first_comment": "Full lyric video: linktr.ee/vmetcone",
+    "recommended_hashtags": [
+      "#vmone",
+      "#suno",
+      "#aimusic",
+      "#newmusic",
+      "#rap"
+    ]
+  }
+}

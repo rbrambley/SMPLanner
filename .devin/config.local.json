@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Exec('Neon Nights')",
+      "Exec(ConvertTo-Json)"
+    ]
+  }
+}
