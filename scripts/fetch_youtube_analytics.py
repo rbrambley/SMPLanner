@@ -30,9 +30,11 @@ SCOPES = [
 
 TOKEN_URI = 'https://oauth2.googleapis.com/token'
 
-# Metrics we want, in rough order of importance.
-LATEST_METRICS = 'views,likes,comments,shares,estimatedMinutesWatched,averageViewDuration,subscribersGained,subscribersLost,playlistStarts'
-DAILY_METRICS = 'views,likes,comments,estimatedMinutesWatched,averageViewDuration'
+# Metrics supported by the YouTube Analytics API for the reports we use.
+# 'shares', 'subscribersLost' and 'playlistStarts' are not available for
+# per-video reports, so they are intentionally excluded here.
+REPORT_METRICS = 'views,likes,comments,estimatedMinutesWatched,averageViewDuration,subscribersGained'
+MINIMAL_VIDEO_METRICS = 'views,likes,estimatedMinutesWatched,averageViewDuration'
 
 DAYS_BACK = 30
 
@@ -145,30 +147,34 @@ def run_analytics_query(youtube_analytics, channel_id, start, end, metrics, dime
         ).execute()
         return parse_report(res)
     except HttpError as e:
-        if e.resp.status == 400 and 'shares' in metrics:
+        if e.resp.status == 400:
+            print(f'Analytics query not supported for metrics={metrics}, dimensions={dimensions}: {e}',
+                  file=sys.stderr)
             return None
         raise
 
 
 def fetch_latest_per_video(youtube_analytics, channel_id, start, end):
-    data = run_analytics_query(youtube_analytics, channel_id, start, end, LATEST_METRICS, 'video')
+    data = run_analytics_query(youtube_analytics, channel_id, start, end, REPORT_METRICS, 'video')
     if data is None:
-        # Retry without shares if the API rejected it.
+        # Fall back to the smallest set known to work with the 'video' dimension.
         data = run_analytics_query(
-            youtube_analytics,
-            channel_id,
-            start,
-            end,
-            'views,likes,comments,estimatedMinutesWatched,averageViewDuration,subscribersGained,subscribersLost,playlistStarts',
-            'video',
+            youtube_analytics, channel_id, start, end,
+            MINIMAL_VIDEO_METRICS, 'video',
         )
     return data
 
 
 def fetch_daily_per_video(youtube_analytics, channel_id, start, end):
-    return run_analytics_query(
-        youtube_analytics, channel_id, start, end, DAILY_METRICS, 'video,day'
+    data = run_analytics_query(
+        youtube_analytics, channel_id, start, end, REPORT_METRICS, 'video,day'
     )
+    if data is None:
+        data = run_analytics_query(
+            youtube_analytics, channel_id, start, end,
+            MINIMAL_VIDEO_METRICS, 'video,day'
+        ) or []
+    return data
 
 
 def build_analytics_document(channel_id, start, end, video_ids, metadata, latest, daily, channel_daily):
@@ -253,12 +259,9 @@ def merge_stats_into_content(content, metadata, latest):
                 'views': stats.get('views', 0),
                 'likes': stats.get('likes', 0),
                 'comments': stats.get('comments', 0),
-                'shares': stats.get('shares', 0),
                 'estimatedMinutesWatched': stats.get('estimatedMinutesWatched', 0.0),
                 'averageViewDuration': stats.get('averageViewDuration', 0.0),
                 'subscribersGained': stats.get('subscribersGained', 0),
-                'subscribersLost': stats.get('subscribersLost', 0),
-                'playlistStarts': stats.get('playlistStarts', 0),
                 'lastUpdated': datetime.now(timezone.utc).isoformat(),
                 'videoId': matched,
             }
@@ -298,7 +301,7 @@ def main():
     daily = fetch_daily_per_video(youtube_analytics, channel_id, start_str, end_str) or []
     channel_daily = run_analytics_query(
         youtube_analytics, channel_id, start_str, end_str,
-        DAILY_METRICS, 'day',
+        REPORT_METRICS, 'day',
     ) or []
 
     analytics_doc = build_analytics_document(
