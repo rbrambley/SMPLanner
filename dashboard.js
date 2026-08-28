@@ -242,6 +242,7 @@
     renderPlan();
     renderToday();
     renderWeek();
+    renderNext4Weeks();
     renderReleases();
     renderAnalytics();
     renderTasks();
@@ -545,6 +546,63 @@
       const entry = data.schedule.find((s) => s.date === dateStr);
       const isPast = dateStr < toISODate(new Date());
       const isToday = dateStr === todayStr;
+      const dayName = d.toLocaleDateString('en-US', { weekday: 'short' });
+      const dateLabel = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+
+      let cellClass = 'day';
+      if (isPast) cellClass += ' past';
+      if (isToday) cellClass += ' today';
+
+      html += `<div class="${cellClass}" data-date="${dateStr}">`;
+      html += `<div class="day-header"><strong>${dayName}</strong><span>${dateLabel}</span></div>`;
+
+      if (entry) {
+        const index = data.schedule.indexOf(entry);
+        const song = getSongById(entry.song_id);
+        const pkgs = generateSongPackages(song);
+        const packageText = buildFullPackageText(song, pkgs);
+        html += `<div class="day-song">${song.title}</div>`;
+        html += `<div class="day-meta"><span class="label ${song.monetization}">${song.monetization}</span></div>`;
+        html += `<div class="day-times">`;
+        Object.keys(entry.platforms).forEach((platform) => {
+          if (entry.platforms[platform]) {
+            html += `<span>${platformName(platform)} ${entry.platforms[platform]}</span>`;
+          }
+        });
+        html += `</div>`;
+        html += `<pre class="hidden-package">${escapeHtml(packageText)}</pre>`;
+        html += `<button class="copy-small day-copy" data-label="full package">Copy full package</button>`;
+        html += `<div class="day-checks">`;
+        Object.keys(entry.platforms).forEach((platform) => {
+          const checked = isCompleted(index, platform) ? 'checked' : '';
+          html += `<label><input type="checkbox" class="complete-check" data-index="${index}" data-platform="${platform}" ${checked}> ${platformName(platform)}</label>`;
+        });
+        html += `</div>`;
+      } else {
+        html += `<div class="day-empty">No post scheduled</div>`;
+      }
+
+      html += `</div>`;
+    }
+    html += '</div>';
+    list.innerHTML = html;
+  }
+
+  function renderNext4Weeks() {
+    const now = new Date();
+    now.setHours(0, 0, 0, 0);
+    const nowStr = toISODate(now);
+    const weekStart = getWeekStart(now);
+    const list = document.getElementById('next4weeks-list');
+
+    let html = '<div class="calendar" style="grid-template-columns: repeat(7, 1fr);">';
+    for (let i = 0; i < 28; i++) {
+      const d = new Date(weekStart);
+      d.setDate(weekStart.getDate() + i);
+      const dateStr = toISODate(d);
+      const entry = data.schedule.find((s) => s.date === dateStr);
+      const isPast = dateStr < nowStr;
+      const isToday = dateStr === nowStr;
       const dayName = d.toLocaleDateString('en-US', { weekday: 'short' });
       const dateLabel = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 
