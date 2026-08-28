@@ -11,10 +11,10 @@
     <h1>VMOne Dashboard</h1>
     <nav>
       <button data-tab="flow" class="active">Flow</button>
-      <button data-tab="create">Create</button>
+      <button data-tab="library">Library</button>
+      <button data-tab="plan">Plan</button>
       <button data-tab="today">Today</button>
       <button data-tab="week">This Week</button>
-      <button data-tab="library">Song Library</button>
       <button data-tab="releases">Releases</button>
       <button data-tab="analytics">Analytics</button>
       <button data-tab="tasks">Tasks</button>
@@ -39,18 +39,14 @@
     </section>
 
     <section id="library" class="tab">
-      <h2>Song Library</h2>
-      <div id="song-library"></div>
-    </section>
-
-    <section id="create" class="tab">
-      <h2>Create</h2>
-      <div class="create-tabs">
-        <button type="button" data-create="new-song" class="active">New Song</button>
-        <button type="button" data-create="release-plan">Release Plan</button>
+      <h2>Library</h2>
+      <div class="library-tabs">
+        <button type="button" data-library="add" class="active">Add Song</button>
+        <button type="button" data-library="bulk">Bulk Import</button>
+        <button type="button" data-library="list">Songs</button>
       </div>
 
-      <div id="create-new-song" class="create-panel active">
+      <div id="library-add" class="library-panel active">
         <form id="new-song-form">
           <label>
             Paste AI JSON here
@@ -137,47 +133,90 @@
         <div id="new-song-output" class="output hidden"></div>
       </div>
 
-      <div id="create-release-plan" class="create-panel hidden">
-        <form id="release-plan-form">
-          <label>
-            Release type
-            <select id="release-type">
-              <option value="single">Single</option>
-              <option value="ep">EP</option>
-              <option value="album">Album</option>
-            </select>
-          </label>
-          <label>
-            Concept or story
-            <input type="text" id="release-concept" required />
-          </label>
-          <label>
-            Genre
-            <input type="text" id="release-genre" required />
-          </label>
-          <label>
-            Moods (comma separated)
-            <input type="text" id="release-moods" required />
-          </label>
-          <label>
-            Number of tracks
-            <input type="number" id="release-tracks" min="1" max="15" value="1" required />
-          </label>
-          <label>
-            Theme words or imagery
-            <input type="text" id="release-themes" />
-          </label>
-          <label>
-            Reference artists or songs
-            <input type="text" id="release-references" />
-          </label>
-          <label>
-            Avoid / IP restrictions
-            <input type="text" id="release-avoid" />
-          </label>
-          <button type="submit">Generate AI Prompt</button>
-        </form>
-        <div id="release-plan-output" class="output hidden"></div>
+      <div id="library-bulk" class="library-panel hidden">
+        <label>
+          Bulk import songs
+          <textarea id="bulk-import-text" rows="12" placeholder="Paste one title per line, CSV with header, or a JSON array..."></textarea>
+        </label>
+        <label>
+          Default genre
+          <input type="text" id="bulk-import-genre" value="rap" />
+        </label>
+        <label>
+          Default status
+          <input type="text" id="bulk-import-status" value="Idea" />
+        </label>
+        <button type="button" id="bulk-import-btn" class="secondary">Preview import</button>
+        <div id="bulk-import-output" class="output hidden"></div>
+      </div>
+
+      <div id="library-list" class="library-panel hidden">
+        <p class="meta">All songs in the library. Use <strong>Add Song</strong> for one, or <strong>Bulk Import</strong> for many.</p>
+        <div id="song-library"></div>
+      </div>
+    </section>
+
+    <section id="plan" class="tab">
+      <h2>Plan</h2>
+      <div class="plan-tabs">
+        <button type="button" data-plan="release" class="active">New Release</button>
+        <button type="button" data-plan="ai-json">From AI JSON</button>
+      </div>
+
+      <div id="plan-release" class="plan-panel active">
+        <h3>Build a release from the library</h3>
+        <label>
+          Release type
+          <select id="plan-release-type">
+            <option value="single">Single</option>
+            <option value="ep">EP</option>
+            <option value="album">Album</option>
+          </select>
+        </label>
+        <label>
+          Concept or story
+          <input type="text" id="plan-concept" />
+        </label>
+        <label>
+          Genre
+          <input type="text" id="plan-genre" />
+        </label>
+        <label>
+          Moods (comma separated)
+          <input type="text" id="plan-moods" />
+        </label>
+        <label>
+          Theme words or imagery
+          <input type="text" id="plan-themes" />
+        </label>
+        <label>
+          Reference artists or songs
+          <input type="text" id="plan-references" />
+        </label>
+        <label>
+          Avoid / IP restrictions
+          <input type="text" id="plan-avoid" />
+        </label>
+
+        <div class="song-picker-wrap">
+          <div class="song-picker-actions">
+            <button type="button" id="plan-select-all">Select all</button>
+            <button type="button" id="plan-clear-all" class="secondary">Clear</button>
+          </div>
+          <div id="plan-song-picker" class="song-picker"></div>
+        </div>
+
+        <button type="button" id="generate-release-prompt">Generate AI Prompt</button>
+        <div id="plan-release-output" class="output hidden"></div>
+      </div>
+
+      <div id="plan-ai-json" class="plan-panel hidden">
+        <label>
+          Paste full release AI JSON
+          <textarea id="plan-ai-json-paste" rows="12" placeholder="Paste the AI's JSON here..."></textarea>
+        </label>
+        <button type="button" id="plan-parse-release-json" class="secondary">Preview</button>
+        <div id="plan-ai-json-output" class="output hidden"></div>
       </div>
     </section>
 

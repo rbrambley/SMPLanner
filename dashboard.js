@@ -8,6 +8,8 @@
   let pendingSong = null;
   let pendingSchedule = null;
   let pendingRelease = null;
+  let pendingBulkSongs = [];
+  let pendingReleaseData = null;
 
   const PIPELINE_STAGES = [
     { id: 'idea', label: 'Idea', color: 'neutral', next: 'Fill in the New Song form' },
@@ -114,19 +116,59 @@
     }
 
     const releaseForm = document.getElementById('release-plan-form');
-    releaseForm.addEventListener('submit', (e) => {
-      e.preventDefault();
-      generateReleasePrompt();
-    });
-
-    const createTabs = document.querySelector('.create-tabs');
-    if (createTabs) {
-      createTabs.addEventListener('click', (e) => {
-        if (e.target.tagName !== 'BUTTON') return;
-        createTabs.querySelectorAll('button').forEach((b) => b.classList.toggle('active', b === e.target));
-        document.querySelectorAll('.create-tabs button').forEach((b) => b.classList.toggle('active', b.dataset.create === e.target.dataset.create));
-        renderCreate();
+    if (releaseForm) {
+      releaseForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        generateReleasePlanPrompt();
       });
+    }
+
+    const libraryTabs = document.querySelector('.library-tabs');
+    if (libraryTabs) {
+      libraryTabs.addEventListener('click', (e) => {
+        if (e.target.tagName !== 'BUTTON') return;
+        libraryTabs.querySelectorAll('button').forEach((b) => b.classList.remove('active'));
+        e.target.classList.add('active');
+        document.querySelectorAll('.library-panel').forEach((el) => el.classList.add('hidden'));
+        const target = document.getElementById('library-' + e.target.dataset.library);
+        if (target) target.classList.remove('hidden');
+      });
+    }
+
+    const planTabs = document.querySelector('.plan-tabs');
+    if (planTabs) {
+      planTabs.addEventListener('click', (e) => {
+        if (e.target.tagName !== 'BUTTON') return;
+        planTabs.querySelectorAll('button').forEach((b) => b.classList.remove('active'));
+        e.target.classList.add('active');
+        document.querySelectorAll('.plan-panel').forEach((el) => el.classList.add('hidden'));
+        const target = document.getElementById('plan-' + e.target.dataset.plan);
+        if (target) target.classList.remove('hidden');
+      });
+    }
+
+    const bulkBtn = document.getElementById('bulk-import-btn');
+    if (bulkBtn) {
+      bulkBtn.addEventListener('click', bulkImportSongs);
+    }
+
+    const planSelectAll = document.getElementById('plan-select-all');
+    if (planSelectAll) {
+      planSelectAll.addEventListener('click', () => {
+        document.querySelectorAll('.plan-song-check').forEach((cb) => cb.checked = true);
+      });
+    }
+
+    const planClearAll = document.getElementById('plan-clear-all');
+    if (planClearAll) {
+      planClearAll.addEventListener('click', () => {
+        document.querySelectorAll('.plan-song-check').forEach((cb) => cb.checked = false);
+      });
+    }
+
+    const planParseBtn = document.getElementById('plan-parse-release-json');
+    if (planParseBtn) {
+      planParseBtn.addEventListener('click', parseReleaseJson);
     }
 
     populateReleaseSelect();
@@ -190,10 +232,10 @@
 
   function renderAll() {
     renderFlow();
-    renderCreate();
+    renderLibrary();
+    renderPlan();
     renderToday();
     renderWeek();
-    renderLibrary();
     renderReleases();
     renderAnalytics();
     renderTasks();
@@ -720,12 +762,34 @@
     populateReleaseSelect();
   }
 
-  function renderCreate() {
-    const active = document.querySelector('.create-tabs button.active');
-    const panel = active ? active.dataset.create : 'new-song';
-    document.querySelectorAll('.create-panel').forEach((el) => el.classList.add('hidden'));
-    const target = document.getElementById('create-' + panel);
+  function renderPlan() {
+    // toggle plan sub-panels
+    const active = document.querySelector('.plan-tabs button.active');
+    const panel = active ? active.dataset.plan : 'release';
+    document.querySelectorAll('.plan-panel').forEach((el) => el.classList.add('hidden'));
+    const target = document.getElementById('plan-' + panel);
     if (target) target.classList.remove('hidden');
+
+    const picker = document.getElementById('plan-song-picker');
+    if (!picker) return;
+
+    const available = (data.songs || []).filter((s) => !s.release_id && (s.pipeline_status || 'planned') !== 'done');
+    if (!available.length) {
+      picker.innerHTML = '<p class="meta">No unassigned songs available. Add songs to the Library first.</p>';
+      return;
+    }
+
+    let html = '';
+    available.forEach((song) => {
+      html += `
+        <label class="song-picker-item">
+          <input type="checkbox" class="plan-song-check" value="${song.id}" data-title="${escapeHtml(song.title)}">
+          <span class="song-picker-title">${escapeHtml(song.title)}</span>
+          <span class="song-picker-meta">${escapeHtml((song.genres || []).join(', ') || '—')} · ${escapeHtml(getStage(song.pipeline_status).label)}</span>
+        </label>
+      `;
+    });
+    picker.innerHTML = html;
   }
 
   function renderFlow() {
@@ -953,33 +1017,274 @@
     `;
   }
 
-  function generateReleasePrompt() {
+  function generateReleasePlanPrompt() {
     const type = document.getElementById('release-type').value;
-    const concept = document.getElementById('release-concept').value.trim();
-    const genre = document.getElementById('release-genre').value.trim();
-    const moods = document.getElementById('release-moods').value.trim();
-    const tracks = document.getElementById('release-tracks').value;
-    const themes = document.getElementById('release-themes').value.trim();
-    const refs = document.getElementById('release-references').value.trim();
-    const avoid = document.getElementById('release-avoid').value.trim();
+    const concept = document.getElementById('plan-concept').value.trim();
+    const genre = document.getElementById('plan-genre').value.trim();
+    const moods = document.getElementById('plan-moods').value.trim();
+    const themes = document.getElementById('plan-themes').value.trim();
+    const refs = document.getElementById('plan-references').value.trim();
+    const avoid = document.getElementById('plan-avoid').value.trim();
+
+    const selectedIds = Array.from(document.querySelectorAll('.plan-song-check:checked')).map((cb) => cb.value);
+    const selectedSongs = selectedIds.map((id) => getSongById(id)).filter(Boolean);
+    const selectedText = selectedSongs.length
+      ? selectedSongs.map((s) => `- ${s.title} (${(s.genres || []).join(', ')})`).join('\n')
+      : 'none';
 
     let prompt = '';
     if (type === 'single') {
-      prompt = `Create a concept for one single song by VMOne (an independent rap/pop/dance artist using Suno).\n\nSong concept: ${concept}\nGenre: ${genre}\nMoods: ${moods}\nTheme words or imagery: ${themes || 'none provided'}\nReference artists or sounds: ${refs || 'none provided'}\nAvoid / IP restrictions: ${avoid || 'none'}\n\nOutput a JSON object with these keys:\n- title\n- genre\n- bpm\n- duration_in_seconds\n- hook (one catchy 1-2 line lyric)\n- title_card (big bold text for the first 1-2 seconds of a 9:16 Short)\n- story (one paragraph)\n- visual_concept (one paragraph)\n- monetization_note (safe or growth-only and why)\n- instagram_caption_question\n\nDo not use emojis. Do not include copyrighted brand names unless explicitly allowed.`;
+      prompt = `Create a concept for one single song by VMOne (an independent rap/pop/dance artist using Suno).\n\n${selectedSongs.length ? 'Selected song: ' + selectedSongs[0].title + '\n' : ''}Song concept: ${concept}\nGenre: ${genre}\nMoods: ${moods}\nTheme words or imagery: ${themes || 'none provided'}\nReference artists or sounds: ${refs || 'none provided'}\nAvoid / IP restrictions: ${avoid || 'none'}\n\nOutput a JSON object with these keys:\n- title\n- genre\n- bpm\n- duration_in_seconds\n- hook (one catchy 1-2 line lyric)\n- title_card (big bold text for the first 1-2 seconds of a 9:16 Short)\n- story (one paragraph)\n- visual_concept (one paragraph)\n- monetization_note (safe or growth-only and why)\n- instagram_caption_question\n\nDo not use emojis. Do not include copyrighted brand names unless explicitly allowed.`;
     } else if (type === 'ep') {
-      prompt = `Create an EP plan for VMOne (an independent rap/pop/dance artist using Suno).\n\nConcept: ${concept}\nGenre: ${genre}\nMoods: ${moods}\nNumber of tracks: ${tracks}\nTheme words or imagery: ${themes || 'none provided'}\nReference artists or sounds: ${refs || 'none provided'}\nAvoid / IP restrictions: ${avoid || 'none'}\n\nOutput a JSON object with:\n- ep_title\n- genre\n- mood_profile\n- total_runtime\n- lead_single (which track number, 1-based)\n- tracks: array of objects with title, role (opener/single/ballad/wildcard/closer), bpm, duration, theme, hook, monetization_note\n\nDo not use emojis. Do not include copyrighted brand names unless explicitly allowed.`;
+      prompt = `Create an EP plan for VMOne (an independent rap/pop/dance artist using Suno).\n\nConcept: ${concept}\nGenre: ${genre}\nMoods: ${moods}\nTheme words or imagery: ${themes || 'none provided'}\nReference artists or sounds: ${refs || 'none provided'}\nAvoid / IP restrictions: ${avoid || 'none'}\n\nSelected songs from the catalog:\n${selectedText}\n\nUse the selected songs as the track list if enough are provided, or fill in additional tracks to create a cohesive EP. Output a JSON object with:\n- ep_title\n- genre\n- mood_profile\n- total_runtime\n- lead_single (which track number, 1-based)\n- tracks: array of objects with title, role (opener/single/ballad/wildcard/closer), bpm, duration, theme, hook, monetization_note\n\nDo not use emojis. Do not include copyrighted brand names unless explicitly allowed.`;
     } else {
-      prompt = `Create a full album plan for VMOne (an independent rap/pop/dance artist using Suno).\n\nConcept: ${concept}\nGenre: ${genre}\nMoods: ${moods}\nNumber of tracks: ${tracks}\nTheme words or imagery: ${themes || 'none provided'}\nReference artists or sounds: ${refs || 'none provided'}\nAvoid / IP restrictions: ${avoid || 'none'}\n\nOutput a JSON object with:\n- album_title\n- slug (folder name, kebab-case)\n- genre and style notes\n- mood_profile\n- total_runtime and average track length\n- tracks: array with number, working title, role (opener/single/ballad/wildcard/closer), mood, bpm, duration, one-sentence theme, hook\n- album_story_arc (one paragraph)\n- lead_singles (track numbers)\n- recommended_tags for YouTube and Suno\n\nDo not use emojis. Do not include copyrighted brand names unless explicitly allowed.`;
+      prompt = `Create a full album plan for VMOne (an independent rap/pop/dance artist using Suno).\n\nConcept: ${concept}\nGenre: ${genre}\nMoods: ${moods}\nTheme words or imagery: ${themes || 'none provided'}\nReference artists or sounds: ${refs || 'none provided'}\nAvoid / IP restrictions: ${avoid || 'none'}\n\nSelected songs from the catalog:\n${selectedText}\n\nUse the selected songs as the basis for the album, or expand with new tracks to create a cohesive record. Output a JSON object with:\n- album_title\n- slug (folder name, kebab-case)\n- genre and style notes\n- mood_profile\n- total_runtime and average track length\n- tracks: array with number, working title, role (opener/single/ballad/wildcard/closer), mood, bpm, duration, one-sentence theme, hook\n- album_story_arc (one paragraph)\n- lead_singles (track numbers)\n- recommended_tags for YouTube and Suno\n\nDo not use emojis. Do not include copyrighted brand names unless explicitly allowed.`;
     }
 
-    const out = document.getElementById('release-plan-output');
+    const out = document.getElementById('plan-release-output');
     out.classList.remove('hidden');
     out.innerHTML = `
       <h3>Copy-paste this into an AI</h3>
       <pre>${escapeHtml(prompt)}</pre>
       <button class="copy" data-label="AI prompt">Copy Prompt</button>
-      <p class="meta">Paste the AI's JSON response back into the New Song form or directly into content.json.</p>
+      <p class="meta">Paste the AI's JSON response into Plan → From AI JSON to import the release.</p>
     `;
+  }
+
+  function bulkImportSongs() {
+    const raw = document.getElementById('bulk-import-text').value.trim();
+    const defaultGenre = document.getElementById('bulk-import-genre').value.trim() || 'rap';
+    const defaultStatus = document.getElementById('bulk-import-status').value.trim() || 'Idea';
+    if (!raw) return;
+
+    let items = [];
+
+    // 1. JSON array or object
+    if (raw.startsWith('[') || raw.startsWith('{')) {
+      try {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed)) items = parsed;
+        else if (parsed.songs && Array.isArray(parsed.songs)) items = parsed.songs;
+        else if (parsed.tracks && Array.isArray(parsed.tracks)) items = parsed.tracks;
+      } catch (err) {
+        alert('Invalid JSON. Make sure the pasted text is valid.');
+        return;
+      }
+    } else if (raw.includes(',')) {
+      // 2. CSV with optional header
+      const lines = raw.split(/\r?\n/).filter(Boolean);
+      const first = lines[0];
+      const hasHeader = /title/i.test(first);
+      const start = hasHeader ? 1 : 0;
+      const header = hasHeader ? first.split(',').map((h) => h.trim().toLowerCase()) : [];
+      const titleIndex = header.indexOf('title') === -1 ? 0 : header.indexOf('title');
+      const genreIndex = header.indexOf('genre') === -1 ? (header.length > 1 ? 1 : -1) : header.indexOf('genre');
+      const statusIndex = header.indexOf('status') === -1 ? (header.length > 2 ? 2 : -1) : header.indexOf('status');
+
+      for (let i = start; i < lines.length; i++) {
+        const parts = lines[i].split(',').map((s) => s.trim());
+        if (!parts[titleIndex]) continue;
+        items.push({
+          title: parts[titleIndex],
+          genres: genreIndex >= 0 && parts[genreIndex] ? parts[genreIndex].split(/\s*;\s*|\s*\/\s*/).filter(Boolean) : [defaultGenre],
+          status: statusIndex >= 0 && parts[statusIndex] ? parts[statusIndex] : defaultStatus
+        });
+      }
+    } else {
+      // 3. One title per line
+      items = raw.split(/\r?\n/).map((line) => line.trim()).filter(Boolean).map((title) => ({ title, genres: [defaultGenre], status: defaultStatus }));
+    }
+
+    pendingBulkSongs = items.map((item) => {
+      const title = item.title || item.working_title || '';
+      const id = title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+      const genres = Array.isArray(item.genres) && item.genres.length ? item.genres : [defaultGenre];
+      return {
+        id,
+        title,
+        genres,
+        title_card: item.title_card || '',
+        hooks: item.hooks || (item.hook ? [item.hook] : []),
+        lyrics: item.lyrics || '',
+        notes: item.notes || 'Imported from Suno catalog.',
+        monetization: item.monetization || 'monetizable',
+        ip_note: item.ip_note || '',
+        status: item.status || defaultStatus,
+        pipeline_status: 'idea',
+        links: {
+          youtube_short: '',
+          youtube_short_id: '',
+          youtube_lyric_id: '',
+          distrokid: item.distrokid || ''
+        }
+      };
+    });
+
+    const out = document.getElementById('bulk-import-output');
+    out.classList.remove('hidden');
+    out.innerHTML = `
+      <h3>Preview ${pendingBulkSongs.length} songs</h3>
+      <pre>${escapeHtml(JSON.stringify(pendingBulkSongs, null, 2))}</pre>
+      <button class="save-bulk" id="save-bulk-songs">Add to content.json and save</button>
+    `;
+  }
+
+  async function saveBulkSongsToContentJson() {
+    if (!pendingBulkSongs.length) {
+      alert('Preview bulk import first.');
+      return;
+    }
+
+    let added = 0;
+    pendingBulkSongs.forEach((song) => {
+      const existing = data.songs.find((s) => s.id === song.id);
+      if (existing) {
+        if (confirm(`"${song.title}" already exists. Replace it?`)) {
+          Object.assign(existing, song);
+        }
+      } else {
+        data.songs.push(song);
+        added++;
+      }
+    });
+
+    pendingBulkSongs = [];
+    renderAll();
+    alert(`${added} songs added. Use Download updated content.json to save the file.`);
+    downloadMergedContent();
+  }
+
+  function parseReleaseJson() {
+    const raw = document.getElementById('plan-ai-json-paste').value.trim();
+    if (!raw) return;
+
+    let obj;
+    try {
+      obj = JSON.parse(raw);
+    } catch (err) {
+      alert('Invalid JSON. Copy and paste the full AI response.');
+      return;
+    }
+
+    const release = obj.release || obj.ep || obj.album || { title: obj.ep_title || obj.album_title || 'Untitled', type: 'single' };
+    const type = (release.type || 'single').toLowerCase();
+    const releaseTitle = release.title || release.ep_title || release.album_title || 'Untitled';
+    const releaseId = type + '-' + releaseTitle.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+
+    let rawSongs = obj.songs || obj.tracks || [];
+    if (!Array.isArray(rawSongs)) rawSongs = [rawSongs];
+
+    const defaultPostTimes = data.settings.default_post_times;
+    let nextDate = getNextAvailableDate();
+    const songs = [];
+    const schedule = [];
+
+    rawSongs.forEach((track, index) => {
+      const title = track.title || track.working_title || '';
+      const id = title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+      const song = {
+        id,
+        title,
+        genres: Array.isArray(track.genres) && track.genres.length ? track.genres : [track.genre || 'rap'],
+        title_card: track.title_card || '',
+        hooks: track.hook ? [track.hook] : (track.hooks || []),
+        lyrics: track.lyrics || '',
+        notes: track.notes || track.theme || '',
+        monetization: track.monetization || track.monetization_note || 'monetizable',
+        ip_note: track.ip_note || '',
+        status: 'Planned',
+        pipeline_status: 'planned',
+        release_id: releaseId,
+        links: {
+          youtube_short: '',
+          youtube_short_id: '',
+          youtube_lyric_id: '',
+          distrokid: ''
+        }
+      };
+      songs.push(song);
+
+      const platforms = {};
+      Object.keys(defaultPostTimes).forEach((key) => {
+        if (key !== 'youtube_lyric_video' || type === 'single') platforms[key] = defaultPostTimes[key];
+      });
+
+      schedule.push({
+        date: nextDate,
+        song_id: id,
+        release_id: releaseId,
+        platforms,
+        hook_index: 0,
+        completed: {}
+      });
+
+      const d = new Date(nextDate + 'T00:00:00');
+      d.setDate(d.getDate() + 1);
+      nextDate = toISODate(d);
+    });
+
+    const template = data.templates.find((t) => t.id === (type === 'single' ? 'single-release' : 'ep-release'));
+    const steps = template ? template.steps : [];
+    const tasks = [];
+    songs.forEach((song) => {
+      steps.forEach((step, i) => {
+        tasks.push({
+          id: `${releaseId}-${song.id}-${i}`,
+          templateId: step.id,
+          label: step.label,
+          completed: false,
+          song_id: song.id
+        });
+      });
+    });
+
+    pendingReleaseData = {
+      release: {
+        id: releaseId,
+        title: releaseTitle,
+        type: type === 'ep' ? 'EP' : (type === 'album' ? 'Album' : 'Single'),
+        status: 'planned',
+        songs: songs.map((s) => s.id),
+        startDate: schedule.length ? schedule[0].date : toISODate(new Date()),
+        endDate: schedule.length ? schedule[schedule.length - 1].date : toISODate(new Date()),
+        notes: release.notes || '',
+        tasks
+      },
+      songs,
+      schedule
+    };
+
+    const out = document.getElementById('plan-ai-json-output');
+    out.classList.remove('hidden');
+    out.innerHTML = `
+      <h3>Preview release</h3>
+      <pre>${escapeHtml(JSON.stringify(pendingReleaseData, null, 2))}</pre>
+      <button class="save-release" id="save-release-json">Add to content.json and save</button>
+    `;
+  }
+
+  async function saveReleaseDataToContentJson() {
+    if (!pendingReleaseData) {
+      alert('Preview the AI JSON first.');
+      return;
+    }
+
+    pendingReleaseData.songs.forEach((song) => {
+      const existing = data.songs.find((s) => s.id === song.id);
+      if (existing) Object.assign(existing, song);
+      else data.songs.push(song);
+    });
+
+    pendingReleaseData.schedule.forEach((s) => data.schedule.push(s));
+
+    const existingRelease = data.releases.find((r) => r.id === pendingReleaseData.release.id);
+    if (existingRelease) Object.assign(existingRelease, pendingReleaseData.release);
+    else data.releases.push(pendingReleaseData.release);
+
+    pendingReleaseData = null;
+    renderAll();
+    alert('Release added. Use Download updated content.json to save the file.');
+    downloadMergedContent();
   }
 
   function getMergedData() {
@@ -1110,6 +1415,16 @@
     const saveBtn = e.target.closest('.save-song');
     if (saveBtn) {
       saveSongToContentJson();
+    }
+
+    const saveBulkBtn = e.target.closest('.save-bulk');
+    if (saveBulkBtn) {
+      saveBulkSongsToContentJson();
+    }
+
+    const saveReleaseBtn = e.target.closest('.save-release');
+    if (saveReleaseBtn) {
+      saveReleaseDataToContentJson();
     }
 
     const advanceBtn = e.target.closest('.advance-pipeline');

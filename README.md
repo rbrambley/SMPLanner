@@ -7,7 +7,8 @@ A static HTML/JS dashboard for planning, tracking, and analyzing social media co
 ## What it does
 
 - **Flow:** Kanban-style pipeline from idea to done. See every song’s current stage, next action, and progress.
-- **Create:** Add a new song manually or from AI JSON, and generate AI prompts for singles, EPs, and albums.
+- **Library:** Add a single song manually or from AI JSON, or bulk-import many existing songs.
+- **Plan:** Build releases by selecting songs from the library, generate AI prompts, or import a full AI-generated release JSON.
 - **Today / This Week:** Shows the current or next scheduled post with copy-paste packages for YouTube Shorts, YouTube Lyric Videos, Instagram Reels, Facebook Reels, and Threads.
 - **Song Library:** Searchable, collapsible list of all songs with platform-specific text packages and pipeline stage.
 - **Releases:** View all planned releases and their progress.
@@ -22,11 +23,11 @@ A static HTML/JS dashboard for planning, tracking, and analyzing social media co
 ## Release planning
 
 1. Open **Flow** to see where every song sits in the idea-to-publish pipeline.
-2. Use **Create → New Song** to add a song manually or from AI JSON. Pick the post date (or click **Suggest next open date**), choose platforms, and set video IDs.
-3. Use **Create → Release Plan** to generate a copy-paste AI prompt for singles, EPs, and albums.
-4. Choose **New single release** to create a release and checklist in one click.
-5. Click **Generate Song JSON**, review the output, then click **Add to content.json and save**.
-6. The new song appears in **Flow**, **Song Library**, **This Week**, and the checklist in **Tasks**.
+2. Use **Library → Add Song** to add one song manually or from AI JSON.
+3. Use **Library → Bulk Import** to quickly add many existing songs (one title per line, CSV, or JSON).
+4. Use **Plan → New Release** to choose songs from the library, set the release type/concept, and generate a copy-paste AI prompt.
+5. Paste the AI's response into **Plan → From AI JSON** to create the release, songs, schedule, and checklist.
+6. New songs and releases appear in **Flow**, **Library → Songs**, **This Week**, and the checklist in **Tasks**.
 
 `content.json` stores the checklist templates under `templates` and planned releases under `releases`. The default templates are `single-release` and `ep-release`.
 
