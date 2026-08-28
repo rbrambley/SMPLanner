@@ -23,6 +23,8 @@
       "status": "Short + full video live",
       "links": {
         "youtube_short": "",
+        "youtube_short_id": "",
+        "youtube_lyric_id": "",
         "distrokid": "https://distrokid.com/hyperfollow/vmone/the-macaw?ref=release"
       }
     },
@@ -40,6 +42,8 @@
       "status": "Short + full video live",
       "links": {
         "youtube_short": "",
+        "youtube_short_id": "",
+        "youtube_lyric_id": "",
         "distrokid": ""
       }
     },
@@ -57,6 +61,8 @@
       "status": "Shorts/Reels only",
       "links": {
         "youtube_short": "",
+        "youtube_short_id": "",
+        "youtube_lyric_id": "",
         "distrokid": ""
       }
     },
@@ -74,6 +80,8 @@
       "status": "Short + full video live",
       "links": {
         "youtube_short": "",
+        "youtube_short_id": "",
+        "youtube_lyric_id": "",
         "distrokid": ""
       }
     },
@@ -91,6 +99,8 @@
       "status": "Short + full video live",
       "links": {
         "youtube_short": "",
+        "youtube_short_id": "",
+        "youtube_lyric_id": "",
         "distrokid": ""
       }
     },
@@ -108,6 +118,8 @@
       "status": "Reel + YT Short live",
       "links": {
         "youtube_short": "",
+        "youtube_short_id": "",
+        "youtube_lyric_id": "",
         "distrokid": ""
       }
     },
@@ -125,6 +137,8 @@
       "status": "Short + full video live",
       "links": {
         "youtube_short": "",
+        "youtube_short_id": "",
+        "youtube_lyric_id": "",
         "distrokid": ""
       }
     },
@@ -142,6 +156,8 @@
       "status": "Short + Reel + FB live, GRACKLE lead single",
       "links": {
         "youtube_short": "",
+        "youtube_short_id": "",
+        "youtube_lyric_id": "",
         "distrokid": "https://distrokid.com/hyperfollow/vmone/grackle?ref=release"
       }
     }

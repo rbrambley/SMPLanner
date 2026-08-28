@@ -2,6 +2,7 @@
   'use strict';
 
   let data = null;
+  let analytics = null;
   const STORAGE_KEY = 'vmone_dashboard_state';
   let state = { schedule: [], tasks: {} };
   let pendingSong = null;
@@ -19,7 +20,17 @@
     setupTabs();
     setupForms();
     setupDownload();
+    await loadAnalytics();
     renderAll();
+  }
+
+  async function loadAnalytics() {
+    try {
+      const res = await fetch('analytics.json?v=' + Date.now(), { cache: 'no-store' });
+      if (res.ok) analytics = await res.json();
+    } catch (err) {
+      analytics = null;
+    }
   }
 
   function showError(msg) {
@@ -136,6 +147,7 @@
     renderToday();
     renderWeek();
     renderLibrary();
+    renderAnalytics();
     renderTasks();
     renderProgress();
   }
@@ -543,6 +555,65 @@
     renderWeek();
     renderLibrary();
     renderProgress();
+  }
+
+  function formatNumber(n) {
+    return n == null ? '—' : Number(n).toLocaleString();
+  }
+
+  function renderAnalytics() {
+    const summary = document.getElementById('analytics-summary');
+    const table = document.getElementById('analytics-table');
+
+    if (!analytics || !analytics.videos) {
+      summary.innerHTML = '<p class="meta">No analytics data yet. Run the GitHub Actions workflow to fetch YouTube stats.</p>';
+      table.innerHTML = '';
+      return;
+    }
+
+    const sorted = analytics.videos.slice().sort((a, b) => (b.latest.views || 0) - (a.latest.views || 0));
+
+    let totals = { views: 0, likes: 0, comments: 0, estimatedMinutesWatched: 0, subscribersGained: 0 };
+    sorted.forEach((v) => {
+      const l = v.latest || {};
+      totals.views += l.views || 0;
+      totals.likes += l.likes || 0;
+      totals.comments += l.comments || 0;
+      totals.estimatedMinutesWatched += l.estimatedMinutesWatched || 0;
+      totals.subscribersGained += l.subscribersGained || 0;
+    });
+
+    summary.innerHTML = `
+      <div class="analytics-cards">
+        <div class="stat-card"><strong>${formatNumber(totals.views)}</strong><span>Total Views</span></div>
+        <div class="stat-card"><strong>${formatNumber(totals.likes)}</strong><span>Likes</span></div>
+        <div class="stat-card"><strong>${formatNumber(totals.comments)}</strong><span>Comments</span></div>
+        <div class="stat-card"><strong>${formatNumber(totals.estimatedMinutesWatched)}</strong><span>Est. Minutes</span></div>
+        <div class="stat-card"><strong>${formatNumber(totals.subscribersGained)}</strong><span>New Subs</span></div>
+      </div>
+      <p class="meta">Last updated: ${new Date(analytics.lastUpdated).toLocaleString()}</p>
+    `;
+
+    let html = '<table class="analytics-table"><thead><tr>';
+    html += '<th>Video</th><th>Type</th><th>Views</th><th>Likes</th><th>Comments</th><th>Watch (min)</th><th>Avg s</th><th>+Subs</th>';
+    html += '</tr></thead><tbody>';
+
+    sorted.forEach((v) => {
+      const l = v.latest || {};
+      html += '<tr>';
+      html += `<td class="video-title"><a href="https://www.youtube.com/watch?v=${v.videoId}" target="_blank">${escapeHtml(v.title || v.videoId)}</a></td>`;
+      html += `<td>${v.videoType || '—'}</td>`;
+      html += `<td class="num">${formatNumber(l.views)}</td>`;
+      html += `<td class="num">${formatNumber(l.likes)}</td>`;
+      html += `<td class="num">${formatNumber(l.comments)}</td>`;
+      html += `<td class="num">${formatNumber(l.estimatedMinutesWatched)}</td>`;
+      html += `<td class="num">${formatNumber(l.averageViewDuration)}</td>`;
+      html += `<td class="num">${formatNumber(l.subscribersGained)}</td>`;
+      html += '</tr>';
+    });
+
+    html += '</tbody></table>';
+    table.innerHTML = html;
   }
 
   function renderTasks() {
