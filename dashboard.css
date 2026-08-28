@@ -692,7 +692,7 @@ button.secondary:hover {
 
 /* Flow board */
 #flow {
-  overflow-x: auto;
+  overflow: visible;
 }
 
 .flow-summary {
@@ -710,14 +710,12 @@ button.secondary:hover {
 }
 
 .flow-board {
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
   gap: 1rem;
-  min-width: 900px;
 }
 
 .flow-column {
-  flex: 1 1 0;
-  min-width: 220px;
   background: #111827;
   border: 1px solid #374151;
   border-radius: 0.5rem;
