@@ -12,7 +12,9 @@
     {
       "id": "the-macaw",
       "title": "The Macaw",
-      "genres": ["rap"],
+      "genres": [
+        "rap"
+      ],
       "title_card": "my macaw talks back",
       "hooks": [
         "He’s a Macaw in the sun / Talks back, but he don’t talk back to just anyone"
@@ -26,12 +28,27 @@
         "youtube_short_id": "",
         "youtube_lyric_id": "",
         "distrokid": "https://distrokid.com/hyperfollow/vmone/the-macaw?ref=release"
+      },
+      "stats": {
+        "views": 4,
+        "likes": 0,
+        "comments": 0,
+        "estimatedMinutesWatched": 0.0,
+        "averageViewDuration": 0.0,
+        "subscribersGained": 0,
+        "lastUpdated": "2026-08-28T10:46:48.136484+00:00",
+        "videoId": "wIV6b-k_4j0"
       }
     },
     {
       "id": "woo-problem",
       "title": "Woo Problem",
-      "genres": ["club rap", "hip hop", "dance", "humor"],
+      "genres": [
+        "club rap",
+        "hip hop",
+        "dance",
+        "humor"
+      ],
       "title_card": "Suno won’t stop saying WOO",
       "hooks": [
         "Suno won’t stop saying WOO / Every drop hits like the bass in the room"
@@ -45,12 +62,24 @@
         "youtube_short_id": "",
         "youtube_lyric_id": "",
         "distrokid": ""
+      },
+      "stats": {
+        "views": 6,
+        "likes": 0,
+        "comments": 1,
+        "estimatedMinutesWatched": 0.0,
+        "averageViewDuration": 0.0,
+        "subscribersGained": 0,
+        "lastUpdated": "2026-08-28T10:46:48.136506+00:00",
+        "videoId": "bkMV40DstcE"
       }
     },
     {
       "id": "buc-ees",
       "title": "Everybody In The Truck Get Buc-ee’s",
-      "genres": ["country/hip-hop"],
+      "genres": [
+        "country/hip-hop"
+      ],
       "title_card": "if you see this sign, we’re pulling over",
       "hooks": [
         "Everybody in the truck get Buc-ee’s / If you see the sign, we’re pulling over"
@@ -64,12 +93,24 @@
         "youtube_short_id": "",
         "youtube_lyric_id": "",
         "distrokid": ""
+      },
+      "stats": {
+        "views": 8,
+        "likes": 0,
+        "comments": 0,
+        "estimatedMinutesWatched": 0.0,
+        "averageViewDuration": 0.0,
+        "subscribersGained": 0,
+        "lastUpdated": "2026-08-28T10:46:48.136514+00:00",
+        "videoId": "qpvvIK0cvj8"
       }
     },
     {
       "id": "brand-new-day",
       "title": "Brand New Day (You Didn’t Ask for My Review)",
-      "genres": ["rap"],
+      "genres": [
+        "rap"
+      ],
       "title_card": "Brand New Day — hype is loud",
       "hooks": [
         "Brand New Day — the hype is loud, the energy’s insane / Webs slicing through the skyline like lightning in the rain"
@@ -83,12 +124,24 @@
         "youtube_short_id": "",
         "youtube_lyric_id": "",
         "distrokid": ""
+      },
+      "stats": {
+        "views": 2,
+        "likes": 0,
+        "comments": 0,
+        "estimatedMinutesWatched": 0.0,
+        "averageViewDuration": 0.0,
+        "subscribersGained": 0,
+        "lastUpdated": "2026-08-28T10:46:48.136526+00:00",
+        "videoId": "of_Y1gDF4LA"
       }
     },
     {
       "id": "its-real",
       "title": "It’s Real",
-      "genres": ["rap"],
+      "genres": [
+        "rap"
+      ],
       "title_card": "when the rent is due and the phone is on 1%",
       "hooks": [
         "It’s real when the rent is due and the phone is on 1%"
@@ -102,12 +155,24 @@
         "youtube_short_id": "",
         "youtube_lyric_id": "",
         "distrokid": ""
+      },
+      "stats": {
+        "views": 305,
+        "likes": 3,
+        "comments": 2,
+        "estimatedMinutesWatched": 0.0,
+        "averageViewDuration": 0.0,
+        "subscribersGained": 0,
+        "lastUpdated": "2026-08-28T10:46:48.136536+00:00",
+        "videoId": "_ZYUw14jj_I"
       }
     },
     {
       "id": "signal-in-signal-out",
       "title": "Signal In, Signal Out (Skinwalker Ranch)",
-      "genres": ["rap"],
+      "genres": [
+        "rap"
+      ],
       "title_card": "Skinwalker Ranch in 15 seconds",
       "hooks": [
         "Signal in, signal out, something weird is going down"
@@ -126,7 +191,9 @@
     {
       "id": "dirty-dac",
       "title": "Dirty Dac (Dacula)",
-      "genres": ["rap"],
+      "genres": [
+        "rap"
+      ],
       "title_card": "slide through Dac with the tint real black",
       "hooks": [
         "Slide through Dac with the tint real black"
@@ -140,12 +207,24 @@
         "youtube_short_id": "",
         "youtube_lyric_id": "",
         "distrokid": ""
+      },
+      "stats": {
+        "views": 4,
+        "likes": 0,
+        "comments": 0,
+        "estimatedMinutesWatched": 0.0,
+        "averageViewDuration": 0.0,
+        "subscribersGained": 0,
+        "lastUpdated": "2026-08-28T10:46:48.136560+00:00",
+        "videoId": "ARxCFbHhqdI"
       }
     },
     {
       "id": "night-shift-halo",
       "title": "Night Shift Halo",
-      "genres": ["rap rock"],
+      "genres": [
+        "rap rock"
+      ],
       "title_card": "the night shift anthem",
       "hooks": [
         "Night shift halo, I’m still running on no sleep"
@@ -159,6 +238,16 @@
         "youtube_short_id": "",
         "youtube_lyric_id": "",
         "distrokid": "https://distrokid.com/hyperfollow/vmone/grackle?ref=release"
+      },
+      "stats": {
+        "views": 0,
+        "likes": 0,
+        "comments": 0,
+        "estimatedMinutesWatched": 0.0,
+        "averageViewDuration": 0.0,
+        "subscribersGained": 0,
+        "lastUpdated": "2026-08-28T10:46:48.136567+00:00",
+        "videoId": "tGOSjdti5v8"
       }
     }
   ],
@@ -166,66 +255,182 @@
     {
       "date": "2026-08-22",
       "song_id": "the-macaw",
-      "platforms": { "youtube_short": "20:00", "youtube_lyric_video": null, "instagram_reel": "19:00", "facebook_reel": "19:00", "threads": "19:00" },
+      "platforms": {
+        "youtube_short": "20:00",
+        "youtube_lyric_video": null,
+        "instagram_reel": "19:00",
+        "facebook_reel": "19:00",
+        "threads": "19:00"
+      },
       "hook_index": 0,
-      "completed": { "youtube_short": true, "youtube_lyric_video": false, "instagram_reel": true, "facebook_reel": true, "threads": true }
+      "completed": {
+        "youtube_short": true,
+        "youtube_lyric_video": false,
+        "instagram_reel": true,
+        "facebook_reel": true,
+        "threads": true
+      }
     },
     {
       "date": "2026-08-23",
       "song_id": "its-real",
-      "platforms": { "youtube_short": "20:00", "youtube_lyric_video": null, "instagram_reel": "20:00", "facebook_reel": "20:00", "threads": "20:00" },
+      "platforms": {
+        "youtube_short": "20:00",
+        "youtube_lyric_video": null,
+        "instagram_reel": "20:00",
+        "facebook_reel": "20:00",
+        "threads": "20:00"
+      },
       "hook_index": 0,
-      "completed": { "youtube_short": true, "youtube_lyric_video": false, "instagram_reel": true, "facebook_reel": true, "threads": true }
+      "completed": {
+        "youtube_short": true,
+        "youtube_lyric_video": false,
+        "instagram_reel": true,
+        "facebook_reel": true,
+        "threads": true
+      }
     },
     {
       "date": "2026-08-24",
       "song_id": "woo-problem",
-      "platforms": { "youtube_short": "20:00", "youtube_lyric_video": null, "instagram_reel": "20:00", "facebook_reel": "20:00", "threads": "20:00" },
+      "platforms": {
+        "youtube_short": "20:00",
+        "youtube_lyric_video": null,
+        "instagram_reel": "20:00",
+        "facebook_reel": "20:00",
+        "threads": "20:00"
+      },
       "hook_index": 0,
-      "completed": { "youtube_short": true, "youtube_lyric_video": false, "instagram_reel": true, "facebook_reel": true, "threads": true }
+      "completed": {
+        "youtube_short": true,
+        "youtube_lyric_video": false,
+        "instagram_reel": true,
+        "facebook_reel": true,
+        "threads": true
+      }
     },
     {
       "date": "2026-08-25",
       "song_id": "signal-in-signal-out",
-      "platforms": { "youtube_short": "20:00", "youtube_lyric_video": null, "instagram_reel": "20:00", "facebook_reel": "20:00", "threads": "20:00" },
+      "platforms": {
+        "youtube_short": "20:00",
+        "youtube_lyric_video": null,
+        "instagram_reel": "20:00",
+        "facebook_reel": "20:00",
+        "threads": "20:00"
+      },
       "hook_index": 0,
-      "completed": { "youtube_short": true, "youtube_lyric_video": false, "instagram_reel": true, "facebook_reel": true, "threads": true }
+      "completed": {
+        "youtube_short": true,
+        "youtube_lyric_video": false,
+        "instagram_reel": true,
+        "facebook_reel": true,
+        "threads": true
+      }
     },
     {
       "date": "2026-08-26",
       "song_id": "buc-ees",
-      "platforms": { "youtube_short": "20:00", "youtube_lyric_video": null, "instagram_reel": "20:00", "facebook_reel": "20:00", "threads": "20:00" },
+      "platforms": {
+        "youtube_short": "20:00",
+        "youtube_lyric_video": null,
+        "instagram_reel": "20:00",
+        "facebook_reel": "20:00",
+        "threads": "20:00"
+      },
       "hook_index": 0,
-      "completed": { "youtube_short": true, "youtube_lyric_video": false, "instagram_reel": true, "facebook_reel": true, "threads": true }
+      "completed": {
+        "youtube_short": true,
+        "youtube_lyric_video": false,
+        "instagram_reel": true,
+        "facebook_reel": true,
+        "threads": true
+      }
     },
     {
       "date": "2026-08-27",
       "song_id": "night-shift-halo",
-      "platforms": { "youtube_short": "20:00", "youtube_lyric_video": null, "instagram_reel": "20:00", "facebook_reel": "12:30", "threads": "20:00" },
+      "platforms": {
+        "youtube_short": "20:00",
+        "youtube_lyric_video": null,
+        "instagram_reel": "20:00",
+        "facebook_reel": "12:30",
+        "threads": "20:00"
+      },
       "hook_index": 0,
-      "completed": { "youtube_short": false, "youtube_lyric_video": false, "instagram_reel": false, "facebook_reel": false, "threads": false }
+      "completed": {
+        "youtube_short": false,
+        "youtube_lyric_video": false,
+        "instagram_reel": false,
+        "facebook_reel": false,
+        "threads": false
+      }
     },
     {
       "date": "2026-08-28",
       "song_id": "dirty-dac",
-      "platforms": { "youtube_short": "20:00", "youtube_lyric_video": null, "instagram_reel": "20:00", "facebook_reel": "12:30", "threads": "20:00" },
+      "platforms": {
+        "youtube_short": "20:00",
+        "youtube_lyric_video": null,
+        "instagram_reel": "20:00",
+        "facebook_reel": "12:30",
+        "threads": "20:00"
+      },
       "hook_index": 0,
-      "completed": { "youtube_short": false, "youtube_lyric_video": false, "instagram_reel": false, "facebook_reel": false, "threads": false }
+      "completed": {
+        "youtube_short": false,
+        "youtube_lyric_video": false,
+        "instagram_reel": false,
+        "facebook_reel": false,
+        "threads": false
+      }
     },
     {
       "date": "2026-08-29",
       "song_id": "brand-new-day",
-      "platforms": { "youtube_short": "20:00", "youtube_lyric_video": null, "instagram_reel": "20:00", "facebook_reel": "12:30", "threads": "20:00" },
+      "platforms": {
+        "youtube_short": "20:00",
+        "youtube_lyric_video": null,
+        "instagram_reel": "20:00",
+        "facebook_reel": "12:30",
+        "threads": "20:00"
+      },
       "hook_index": 0,
-      "completed": { "youtube_short": false, "youtube_lyric_video": false, "instagram_reel": false, "facebook_reel": false, "threads": false }
+      "completed": {
+        "youtube_short": false,
+        "youtube_lyric_video": false,
+        "instagram_reel": false,
+        "facebook_reel": false,
+        "threads": false
+      }
     }
   ],
   "tasks": [
-    { "id": "setup-linktree", "label": "Set up Linktree with all links", "completed": true },
-    { "id": "post-14-shorts", "label": "Post 14 Shorts in first month", "completed": false },
-    { "id": "daily-engagement", "label": "Engage 10–15 similar accounts daily", "completed": false },
-    { "id": "weekly-analytics", "label": "Review analytics every Sunday", "completed": false },
-    { "id": "batch-create", "label": "Batch create 3–4 Shorts on Monday", "completed": false }
+    {
+      "id": "setup-linktree",
+      "label": "Set up Linktree with all links",
+      "completed": true
+    },
+    {
+      "id": "post-14-shorts",
+      "label": "Post 14 Shorts in first month",
+      "completed": false
+    },
+    {
+      "id": "daily-engagement",
+      "label": "Engage 10–15 similar accounts daily",
+      "completed": false
+    },
+    {
+      "id": "weekly-analytics",
+      "label": "Review analytics every Sunday",
+      "completed": false
+    },
+    {
+      "id": "batch-create",
+      "label": "Batch create 3–4 Shorts on Monday",
+      "completed": false
+    }
   ],
   "settings": {
     "default_post_times": {
