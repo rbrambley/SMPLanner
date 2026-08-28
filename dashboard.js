@@ -38,9 +38,6 @@
       data.templates = data.templates || [];
       data.releases = data.releases || [];
       (data.songs || []).forEach((song) => {
-        if (state.pipeline && state.pipeline[song.id]) {
-          song.pipeline_status = state.pipeline[song.id];
-        }
         if (!song.pipeline_status) song.pipeline_status = 'planned';
       });
     } catch (err) {
@@ -48,6 +45,11 @@
       return;
     }
     loadState();
+    (data.songs || []).forEach((song) => {
+      if (state.pipeline && state.pipeline[song.id]) {
+        song.pipeline_status = state.pipeline[song.id];
+      }
+    });
     setupTabs();
     setupForms();
     setupDownload();
