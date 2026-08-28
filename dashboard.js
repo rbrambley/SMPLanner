@@ -801,24 +801,52 @@
       return;
     }
 
+    const today = todayStr();
     let html = '';
     data.releases.forEach((rel) => {
-      const songs = rel.songs.map((sid) => {
+      const songLookup = rel.songs.reduce((acc, sid) => {
         const song = getSongById(sid);
-        return song ? song.title : sid;
-      }).join(', ');
+        if (song) acc[sid] = song;
+        return acc;
+      }, {});
+
+      const songTitles = Object.values(songLookup).map((s) => s.title).join(', ');
+
+      const releaseSchedule = data.schedule
+        .filter((s) => songLookup[s.song_id])
+        .sort((a, b) => a.date.localeCompare(b.date));
+
+      const nextPost = releaseSchedule.find((s) => s.date >= today);
+      const nextUncompletedTask = (rel.tasks || []).find((t) => !isTaskCompleted(t.id, t.completed));
+
+      const taskList = (rel.tasks || []).map((task) => {
+        const completed = isTaskCompleted(task.id, task.completed);
+        return `<li><input type="checkbox" class="task-check" data-id="${task.id}" data-release-id="${rel.id}" ${completed ? 'checked' : ''}><span class="${completed ? 'completed' : ''}">${escapeHtml(task.label)}</span></li>`;
+      }).join('');
+
       const total = (rel.tasks || []).length;
-      const done = (rel.tasks || []).filter((t) => t.completed).length;
+      const done = (rel.tasks || []).filter((t) => isTaskCompleted(t.id, t.completed)).length;
+
       html += `
         <div class="release-card">
           <div class="release-header">
             <h3>${escapeHtml(rel.title)} <span class="label">${rel.type}</span></h3>
-            <div class="meta">${rel.startDate}${rel.endDate && rel.endDate !== rel.startDate ? ' – ' + rel.endDate : ''} · ${songs}</div>
+            <div class="meta">${rel.startDate}${rel.endDate && rel.endDate !== rel.startDate ? ' – ' + rel.endDate : ''} · ${escapeHtml(songTitles)}</div>
           </div>
+          ${nextPost ? `
+            <div class="meta" style="margin-top: 0.5rem;">
+              <strong>Next post:</strong> ${formatDate(nextPost.date)} — ${escapeHtml(songLookup[nextPost.song_id].title)}
+              <div class="day-times" style="margin-top: 0.25rem;">
+                ${Object.keys(nextPost.platforms).filter((p) => nextPost.platforms[p]).map((p) => `<span>${platformName(p)} ${nextPost.platforms[p]}</span>`).join('')}
+              </div>
+            </div>
+          ` : '<div class="meta" style="margin-top: 0.5rem;">No upcoming posts for this release.</div>'}
+          ${nextUncompletedTask ? `<div class="meta" style="margin-top: 0.5rem;"><strong>Next task:</strong> ${escapeHtml(nextUncompletedTask.label)}</div>` : ''}
           <div class="release-progress">
             <div class="progress-bar" style="--w: ${total ? (done / total) * 100 : 0}%" aria-valuenow="${total ? (done / total) * 100 : 0}" aria-valuemin="0" aria-valuemax="100"></div>
             <span>${done}/${total} complete</span>
           </div>
+          ${taskList ? `<ul class="task-list" style="margin-top: 0.75rem;">${taskList}</ul>` : ''}
         </div>
       `;
     });
@@ -1518,6 +1546,8 @@
     if (e.target.classList.contains('task-check')) {
       setTaskCompleted(e.target.dataset.id, e.target.checked);
       e.target.nextElementSibling.classList.toggle('completed', e.target.checked);
+      renderReleases();
+      renderTasks();
     }
   });
 
