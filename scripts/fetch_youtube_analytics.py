@@ -30,11 +30,14 @@ SCOPES = [
 
 TOKEN_URI = 'https://oauth2.googleapis.com/token'
 
-# Metrics supported by the YouTube Analytics API for the reports we use.
-# 'shares', 'subscribersLost' and 'playlistStarts' are not available for
-# per-video reports, so they are intentionally excluded here.
-REPORT_METRICS = 'views,likes,comments,estimatedMinutesWatched,averageViewDuration,subscribersGained'
-MINIMAL_VIDEO_METRICS = 'views,likes,estimatedMinutesWatched,averageViewDuration'
+# YouTube Analytics is strict about which metrics can be combined with which
+# dimensions. Views/likes/comments come from the Data API (statistics), which
+# is more reliable for those public counts. We use Analytics for watch time and
+# subscriber metrics, where it is the only source.
+VIDEO_ANALYTICS_METRICS = 'views,estimatedMinutesWatched,subscribersGained'
+VIDEO_ANALYTICS_FALLBACK = 'views,estimatedMinutesWatched'
+VIDEO_DAILY_METRICS = 'views,estimatedMinutesWatched'
+CHANNEL_DAILY_METRICS = 'views,likes,comments,estimatedMinutesWatched,subscribersGained'
 
 DAYS_BACK = 30
 
@@ -121,8 +124,7 @@ def parse_report(report):
     for raw in report.get('rows', []):
         row = dict(zip(headers, raw))
         for k, v in row.items():
-            if k in ('views', 'likes', 'comments', 'shares', 'subscribersGained',
-                     'subscribersLost', 'playlistStarts'):
+            if k in ('views', 'likes', 'comments', 'subscribersGained'):
                 try:
                     row[k] = int(v)
                 except (ValueError, TypeError):
@@ -148,33 +150,54 @@ def run_analytics_query(youtube_analytics, channel_id, start, end, metrics, dime
         return parse_report(res)
     except HttpError as e:
         if e.resp.status == 400:
-            print(f'Analytics query not supported for metrics={metrics}, dimensions={dimensions}: {e}',
+            print(f'Analytics query not supported for metrics={metrics}, dimensions={dimensions}.',
                   file=sys.stderr)
             return None
         raise
 
 
-def fetch_latest_per_video(youtube_analytics, channel_id, start, end):
-    data = run_analytics_query(youtube_analytics, channel_id, start, end, REPORT_METRICS, 'video')
+def fetch_video_analytics(youtube_analytics, channel_id, start, end):
+    data = run_analytics_query(
+        youtube_analytics, channel_id, start, end, VIDEO_ANALYTICS_METRICS, 'video'
+    )
     if data is None:
-        # Fall back to the smallest set known to work with the 'video' dimension.
         data = run_analytics_query(
-            youtube_analytics, channel_id, start, end,
-            MINIMAL_VIDEO_METRICS, 'video',
+            youtube_analytics, channel_id, start, end, VIDEO_ANALYTICS_FALLBACK, 'video'
         )
-    return data
+    return data or []
 
 
 def fetch_daily_per_video(youtube_analytics, channel_id, start, end):
     data = run_analytics_query(
-        youtube_analytics, channel_id, start, end, REPORT_METRICS, 'video,day'
+        youtube_analytics, channel_id, start, end, VIDEO_DAILY_METRICS, 'video,day'
     )
-    if data is None:
-        data = run_analytics_query(
-            youtube_analytics, channel_id, start, end,
-            MINIMAL_VIDEO_METRICS, 'video,day'
-        ) or []
-    return data
+    return data or []
+
+
+def build_video_stats(video_id, metadata, analytics_row):
+    meta = metadata.get(video_id, {})
+    stats = meta.get('statistics', {})
+    analytics = analytics_row or {}
+
+    views = int(stats.get('viewCount', 0) or 0)
+    likes = int(stats.get('likeCount', 0) or 0)
+    comments = int(stats.get('commentCount', 0) or 0)
+    estimated = float(analytics.get('estimatedMinutesWatched', 0.0) or 0.0)
+    subscribers = int(analytics.get('subscribersGained', 0) or 0)
+
+    if views and estimated:
+        avg = (estimated * 60) / views
+    else:
+        avg = 0.0
+
+    return {
+        'views': views,
+        'likes': likes,
+        'comments': comments,
+        'estimatedMinutesWatched': round(estimated, 2),
+        'averageViewDuration': round(avg, 2),
+        'subscribersGained': subscribers,
+    }
 
 
 def build_analytics_document(channel_id, start, end, video_ids, metadata, latest, daily, channel_daily):
@@ -183,17 +206,23 @@ def build_analytics_document(channel_id, start, end, video_ids, metadata, latest
     for row in daily:
         if 'video' not in row:
             continue
-        daily_by_video.setdefault(row['video'], []).append(row)
+        daily_by_video.setdefault(row['video'], []).append({
+            'date': row.get('day', ''),
+            'views': row.get('views', 0),
+            'estimatedMinutesWatched': row.get('estimatedMinutesWatched', 0.0),
+        })
 
     videos = []
     for vid in video_ids:
         meta = metadata.get(vid, {})
+        analytics_row = latest_by_video.get(vid, {})
+        latest_stats = build_video_stats(vid, metadata, analytics_row)
         videos.append({
             'videoId': vid,
             'title': meta.get('title', ''),
             'publishedAt': meta.get('publishedAt', ''),
             'videoType': infer_video_type(meta.get('title', '')),
-            'latest': latest_by_video.get(vid, {}),
+            'latest': latest_stats,
             'daily': daily_by_video.get(vid, []),
         })
 
@@ -207,7 +236,7 @@ def build_analytics_document(channel_id, start, end, video_ids, metadata, latest
 
 
 def infer_video_type(title):
-    tl = title.lower()
+    tl = (title or '').lower()
     if 'short' in tl or 'yt short' in tl or '#short' in tl:
         return 'Short'
     if 'lyric' in tl or 'official lyric video' in tl:
@@ -239,7 +268,6 @@ def match_video_to_song(song, videos, metadata):
         return lyric_id
 
     title = song.get('title', '').lower()
-    # Try to find a video whose title contains the song title or vice versa.
     for vid, meta in metadata.items():
         vt = meta.get('title', '').lower()
         if title and (title in vt or vt in title):
@@ -249,22 +277,15 @@ def match_video_to_song(song, videos, metadata):
 
 def merge_stats_into_content(content, metadata, latest):
     latest_by_video = {row.get('video'): row for row in latest if 'video' in row}
-    video_ids = set(latest_by_video.keys())
+    video_ids = set(metadata.keys())
 
     for song in content.get('songs', []):
         matched = match_video_to_song(song, video_ids, metadata)
-        if matched and matched in latest_by_video:
-            stats = latest_by_video[matched]
-            song['stats'] = {
-                'views': stats.get('views', 0),
-                'likes': stats.get('likes', 0),
-                'comments': stats.get('comments', 0),
-                'estimatedMinutesWatched': stats.get('estimatedMinutesWatched', 0.0),
-                'averageViewDuration': stats.get('averageViewDuration', 0.0),
-                'subscribersGained': stats.get('subscribersGained', 0),
-                'lastUpdated': datetime.now(timezone.utc).isoformat(),
-                'videoId': matched,
-            }
+        if matched and matched in metadata:
+            analytics_row = latest_by_video.get(matched, {})
+            song['stats'] = build_video_stats(matched, metadata, analytics_row)
+            song['stats']['lastUpdated'] = datetime.now(timezone.utc).isoformat()
+            song['stats']['videoId'] = matched
         elif 'stats' in song:
             # Keep existing stats if no match; do not wipe.
             pass
@@ -297,11 +318,11 @@ def main():
     end_str = end.isoformat()
     print(f'Fetching analytics from {start_str} to {end_str}')
 
-    latest = fetch_latest_per_video(youtube_analytics, channel_id, start_str, end_str)
-    daily = fetch_daily_per_video(youtube_analytics, channel_id, start_str, end_str) or []
+    latest = fetch_video_analytics(youtube_analytics, channel_id, start_str, end_str)
+    daily = fetch_daily_per_video(youtube_analytics, channel_id, start_str, end_str)
     channel_daily = run_analytics_query(
         youtube_analytics, channel_id, start_str, end_str,
-        REPORT_METRICS, 'day',
+        CHANNEL_DAILY_METRICS, 'day',
     ) or []
 
     analytics_doc = build_analytics_document(
