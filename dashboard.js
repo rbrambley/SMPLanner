@@ -9,6 +9,25 @@
   let pendingSchedule = null;
   let pendingRelease = null;
 
+  const PIPELINE_STAGES = [
+    { id: 'idea', label: 'Idea', color: 'neutral', next: 'Fill in the New Song form' },
+    { id: 'planned', label: 'Planned', color: 'blue', next: 'Generate packages and create Short' },
+    { id: 'short-created', label: 'Short Created', color: 'yellow', next: 'Upload to YouTube and add video ID' },
+    { id: 'short-scheduled', label: 'Scheduled', color: 'purple', next: 'Post at the scheduled time' },
+    { id: 'short-posted', label: 'Short Posted', color: 'green', next: 'Create lyric video' },
+    { id: 'lyric-created', label: 'Lyric Created', color: 'yellow', next: 'Upload lyric video' },
+    { id: 'lyric-posted', label: 'Lyric Posted', color: 'green', next: 'Mark release complete' },
+    { id: 'done', label: 'Done', color: 'green', next: 'Review analytics' }
+  ];
+
+  function getStageIndex(stageId) {
+    return PIPELINE_STAGES.findIndex((s) => s.id === stageId);
+  }
+
+  function getStage(stageId) {
+    return PIPELINE_STAGES[getStageIndex(stageId)] || PIPELINE_STAGES[0];
+  }
+
   async function init() {
     try {
       const res = await fetch('content.json?v=' + Date.now(), { cache: 'no-store' });
@@ -16,6 +35,9 @@
       data = await res.json();
       data.templates = data.templates || [];
       data.releases = data.releases || [];
+      (data.songs || []).forEach((song) => {
+        if (!song.pipeline_status) song.pipeline_status = 'planned';
+      });
     } catch (err) {
       showError('Could not load content.json. If you are opening this file locally, run a local server with: python -m http.server');
       return;
@@ -97,6 +119,16 @@
       generateReleasePrompt();
     });
 
+    const createTabs = document.querySelector('.create-tabs');
+    if (createTabs) {
+      createTabs.addEventListener('click', (e) => {
+        if (e.target.tagName !== 'BUTTON') return;
+        createTabs.querySelectorAll('button').forEach((b) => b.classList.toggle('active', b === e.target));
+        document.querySelectorAll('.create-tabs button').forEach((b) => b.classList.toggle('active', b.dataset.create === e.target.dataset.create));
+        renderCreate();
+      });
+    }
+
     populateReleaseSelect();
   }
 
@@ -157,6 +189,8 @@
   }
 
   function renderAll() {
+    renderFlow();
+    renderCreate();
     renderToday();
     renderWeek();
     renderLibrary();
@@ -519,6 +553,7 @@
       html += `<span class="label">${song.genres.join(', ')}</span>`;
       html += `<span class="label ${song.monetization}">${song.monetization}</span>`;
       html += `<span class="label">${song.status}</span>`;
+      html += `<span class="label stage stage-${song.pipeline_status || 'planned'}">${escapeHtml(getStage(song.pipeline_status).label)}</span>`;
       html += `<pre class="hidden-package" id="${safeId}">${escapeHtml(fullText)}</pre>`;
       html += `<button class="copy-small" data-target="${safeId}" data-label="full package">Copy full</button>`;
       html += `<button class="delete-song" data-delete-id="${song.id}" title="Delete from library">Delete</button>`;
@@ -683,6 +718,86 @@
     });
     container.innerHTML = html;
     populateReleaseSelect();
+  }
+
+  function renderCreate() {
+    const active = document.querySelector('.create-tabs button.active');
+    const panel = active ? active.dataset.create : 'new-song';
+    document.querySelectorAll('.create-panel').forEach((el) => el.classList.add('hidden'));
+    const target = document.getElementById('create-' + panel);
+    if (target) target.classList.remove('hidden');
+  }
+
+  function renderFlow() {
+    const board = document.getElementById('flow-board');
+    const summary = document.getElementById('flow-summary');
+    if (!board) return;
+
+    const byStage = {};
+    PIPELINE_STAGES.forEach((s) => { byStage[s.id] = []; });
+    (data.songs || []).forEach((song) => {
+      const stage = song.pipeline_status || 'planned';
+      if (!byStage[stage]) byStage[stage] = [];
+      byStage[stage].push(song);
+    });
+
+    const done = (data.songs || []).filter((s) => s.pipeline_status === 'done').length;
+    const total = (data.songs || []).length;
+    const upcoming = data.schedule
+      .filter((s) => s.date >= todayStr() && !isScheduleCompleted(s))
+      .sort((a, b) => a.date.localeCompare(b.date))[0];
+
+    summary.innerHTML = `
+      <div class="flow-summary">
+        <div><strong>${total}</strong> songs</div>
+        <div><strong>${done}</strong> done</div>
+        <div><strong>${total - done}</strong> in progress</div>
+        <div>Next up: ${upcoming ? `${upcoming.date} — ${escapeHtml(getSongById(upcoming.song_id)?.title || upcoming.song_id)}` : '—'}</div>
+      </div>
+    `;
+
+    let html = '';
+    PIPELINE_STAGES.forEach((stage) => {
+      const songs = byStage[stage.id] || [];
+      html += `<div class="flow-column flow-${stage.color}">`;
+      html += `<h3>${stage.label} <span class="count">${songs.length}</span></h3>`;
+      html += `<div class="flow-cards">`;
+      if (!songs.length) {
+        html += `<p class="empty">No songs in this stage.</p>`;
+      } else {
+        songs.forEach((song) => {
+          const release = data.releases.find((r) => r.id === song.release_id);
+          const nextIndex = getStageIndex(stage.id) + 1;
+          const canAdvance = nextIndex < PIPELINE_STAGES.length;
+          const nextStage = canAdvance ? PIPELINE_STAGES[nextIndex].id : '';
+          html += `
+            <div class="flow-card" data-song-id="${song.id}">
+              <div class="flow-card-title">${escapeHtml(song.title)}</div>
+              <div class="flow-card-meta">${escapeHtml(song.monetization || '—')} · ${escapeHtml(song.status || '—')}</div>
+              ${release ? `<div class="flow-card-release">${escapeHtml(release.title)}</div>` : ''}
+              <div class="flow-card-next">Next: ${stage.next}</div>
+              <div class="flow-card-actions">
+                <button class="copy-flow" data-song-id="${song.id}" data-label="packages">Copy package</button>
+                ${canAdvance ? `<button class="advance-pipeline" data-song-id="${song.id}" data-next="${nextStage}">Mark ${PIPELINE_STAGES[nextIndex].label}</button>` : ''}
+              </div>
+            </div>
+          `;
+        });
+      }
+      html += '</div></div>';
+    });
+    board.innerHTML = html;
+  }
+
+  function isScheduleCompleted(entry) {
+    return Object.values(entry.completed || {}).every(Boolean);
+  }
+
+  function setPipelineStatus(songId, newStage) {
+    const song = data.songs.find((s) => s.id === songId);
+    if (!song) return;
+    song.pipeline_status = newStage;
+    renderAll();
   }
 
   function renderTasks() {
@@ -995,6 +1110,20 @@
     const saveBtn = e.target.closest('.save-song');
     if (saveBtn) {
       saveSongToContentJson();
+    }
+
+    const advanceBtn = e.target.closest('.advance-pipeline');
+    if (advanceBtn) {
+      setPipelineStatus(advanceBtn.dataset.songId, advanceBtn.dataset.next);
+    }
+
+    const copyFlowBtn = e.target.closest('.copy-flow');
+    if (copyFlowBtn) {
+      const song = getSongById(copyFlowBtn.dataset.songId);
+      if (song) {
+        const pkgs = generateSongPackages(song);
+        copyToClipboard(JSON.stringify(pkgs, null, 2), copyFlowBtn.dataset.label || 'packages');
+      }
     }
   });
 

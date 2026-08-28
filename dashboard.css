@@ -689,3 +689,141 @@ button.secondary {
 button.secondary:hover {
   background: #4b5563;
 }
+
+/* Flow board */
+#flow {
+  overflow-x: auto;
+}
+
+.flow-summary {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
+}
+
+.flow-summary div {
+  background: #1f2937;
+  border: 1px solid #374151;
+  border-radius: 0.5rem;
+  padding: 0.75rem 1rem;
+}
+
+.flow-board {
+  display: flex;
+  gap: 1rem;
+  min-width: 900px;
+}
+
+.flow-column {
+  flex: 1 1 0;
+  min-width: 220px;
+  background: #111827;
+  border: 1px solid #374151;
+  border-radius: 0.5rem;
+  padding: 0.75rem;
+}
+
+.flow-column h3 {
+  margin: 0 0 0.75rem;
+  font-size: 0.95rem;
+  text-transform: uppercase;
+  color: #e5e7eb;
+}
+
+.flow-column .count {
+  background: #374151;
+  border-radius: 999px;
+  padding: 0.1rem 0.5rem;
+  margin-left: 0.25rem;
+  font-size: 0.85rem;
+}
+
+.flow-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.flow-card {
+  background: #1f2937;
+  border: 1px solid #374151;
+  border-radius: 0.5rem;
+  padding: 0.75rem;
+  font-size: 0.9rem;
+}
+
+.flow-card-title {
+  font-weight: 600;
+  color: #e5e7eb;
+}
+
+.flow-card-meta,
+.flow-card-release,
+.flow-card-next {
+  color: #9ca3af;
+  font-size: 0.8rem;
+  margin-top: 0.25rem;
+}
+
+.flow-card-next {
+  font-style: italic;
+}
+
+.flow-card-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.flow-card-actions button {
+  font-size: 0.8rem;
+  padding: 0.4rem 0.6rem;
+}
+
+.flow-blue h3 { color: #60a5fa; }
+.flow-yellow h3 { color: #facc15; }
+.flow-purple h3 { color: #c084fc; }
+.flow-green h3 { color: #4ade80; }
+.flow-neutral h3 { color: #9ca3af; }
+
+/* Create tab */
+.create-tabs {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  border-bottom: 1px solid #374151;
+  padding-bottom: 0.5rem;
+}
+
+.create-tabs button {
+  background: #111827;
+  border: 1px solid #374151;
+  color: #9ca3af;
+}
+
+.create-tabs button.active {
+  background: #3b82f6;
+  color: #ffffff;
+  border-color: #3b82f6;
+}
+
+.create-panel.hidden {
+  display: none;
+}
+
+/* Library stage label */
+.stage {
+  text-transform: capitalize;
+  background: #374151;
+}
+
+.stage-idea { background: #6b7280; }
+.stage-planned { background: #3b82f6; }
+.stage-short-created { background: #ca8a04; }
+.stage-short-scheduled { background: #9333ea; }
+.stage-short-posted { background: #16a34a; }
+.stage-lyric-created { background: #ca8a04; }
+.stage-lyric-posted { background: #16a34a; }
+.stage-done { background: #15803d; }

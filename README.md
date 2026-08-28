@@ -6,10 +6,10 @@ A static HTML/JS dashboard for planning, tracking, and analyzing social media co
 
 ## What it does
 
+- **Flow:** Kanban-style pipeline from idea to done. See every song’s current stage, next action, and progress.
+- **Create:** Add a new song manually or from AI JSON, and generate AI prompts for singles, EPs, and albums.
 - **Today / This Week:** Shows the current or next scheduled post with copy-paste packages for YouTube Shorts, YouTube Lyric Videos, Instagram Reels, Facebook Reels, and Threads.
-- **Song Library:** Searchable, collapsible list of all songs with platform-specific text packages.
-- **New Song:** Parse AI-generated JSON to quickly add a song, or fill in the form manually. Pick the post date, platforms, YouTube video IDs, and the dashboard auto-suggests the next open slot.
-- **Release Plan:** Generate copy-paste AI prompts for singles, EPs, and albums.
+- **Song Library:** Searchable, collapsible list of all songs with platform-specific text packages and pipeline stage.
 - **Releases:** View all planned releases and their progress.
 - **Tasks:** Per-release checklists for each song plus brand/admin tasks.
 - **Analytics:** YouTube views, likes, comments, watch time, and subscriber gain for every channel video (updated daily by GitHub Actions).
@@ -21,10 +21,12 @@ A static HTML/JS dashboard for planning, tracking, and analyzing social media co
 
 ## Release planning
 
-1. Go to the **New Song** tab, fill in the song, choose the post date (or click **Suggest next open date**), pick platforms, and set the YouTube Short/Lyric IDs if they already exist.
-2. Choose **New single release** to create a release and a checklist in one click.
-3. Click **Generate Song JSON**, review the output, then click **Add to content.json and save**.
-4. The new song appears in **Song Library**, the schedule in **This Week**, and the checklist in **Tasks**.
+1. Open **Flow** to see where every song sits in the idea-to-publish pipeline.
+2. Use **Create → New Song** to add a song manually or from AI JSON. Pick the post date (or click **Suggest next open date**), choose platforms, and set video IDs.
+3. Use **Create → Release Plan** to generate a copy-paste AI prompt for singles, EPs, and albums.
+4. Choose **New single release** to create a release and checklist in one click.
+5. Click **Generate Song JSON**, review the output, then click **Add to content.json and save**.
+6. The new song appears in **Flow**, **Song Library**, **This Week**, and the checklist in **Tasks**.
 
 `content.json` stores the checklist templates under `templates` and planned releases under `releases`. The default templates are `single-release` and `ep-release`.
 
