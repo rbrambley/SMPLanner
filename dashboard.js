@@ -38,6 +38,9 @@
       data.templates = data.templates || [];
       data.releases = data.releases || [];
       (data.songs || []).forEach((song) => {
+        if (state.pipeline && state.pipeline[song.id]) {
+          song.pipeline_status = state.pipeline[song.id];
+        }
         if (!song.pipeline_status) song.pipeline_status = 'planned';
       });
     } catch (err) {
@@ -71,8 +74,9 @@
       const saved = localStorage.getItem(STORAGE_KEY);
       if (saved) state = JSON.parse(saved);
     } catch (e) {
-      state = { schedule: [], tasks: {} };
+      state = { schedule: [], tasks: {}, pipeline: {} };
     }
+    if (!state.pipeline) state.pipeline = {};
   }
 
   function saveState() {
@@ -861,6 +865,9 @@
     const song = data.songs.find((s) => s.id === songId);
     if (!song) return;
     song.pipeline_status = newStage;
+    if (!state.pipeline) state.pipeline = {};
+    state.pipeline[songId] = newStage;
+    saveState();
     renderAll();
   }
 
