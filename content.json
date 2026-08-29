@@ -37,7 +37,7 @@
         "estimatedMinutesWatched": 0.0,
         "averageViewDuration": 0.0,
         "subscribersGained": 0,
-        "lastUpdated": "2026-08-28T10:54:24.200744+00:00",
+        "lastUpdated": "2026-08-29T09:10:28.274813+00:00",
         "videoId": "zdZsXknMNR0"
       }
     },
@@ -66,13 +66,13 @@
         "distrokid": ""
       },
       "stats": {
-        "views": 325,
+        "views": 327,
         "likes": 1,
         "comments": 1,
         "estimatedMinutesWatched": 0.0,
         "averageViewDuration": 0.0,
         "subscribersGained": 0,
-        "lastUpdated": "2026-08-28T10:54:24.200754+00:00",
+        "lastUpdated": "2026-08-29T09:10:28.274822+00:00",
         "videoId": "f5Ea2wnXRcI"
       }
     },
@@ -98,13 +98,13 @@
         "distrokid": ""
       },
       "stats": {
-        "views": 190,
-        "likes": 1,
+        "views": 204,
+        "likes": 2,
         "comments": 1,
         "estimatedMinutesWatched": 0.0,
         "averageViewDuration": 0.0,
         "subscribersGained": 0,
-        "lastUpdated": "2026-08-28T10:54:24.200759+00:00",
+        "lastUpdated": "2026-08-29T09:10:28.274828+00:00",
         "videoId": "eZ5QdDEz57s"
       }
     },
@@ -136,7 +136,7 @@
         "estimatedMinutesWatched": 0.0,
         "averageViewDuration": 0.0,
         "subscribersGained": 0,
-        "lastUpdated": "2026-08-28T10:54:24.200764+00:00",
+        "lastUpdated": "2026-08-29T09:10:28.274832+00:00",
         "videoId": "pEKMSb9L6J0"
       }
     },
@@ -162,13 +162,13 @@
         "distrokid": ""
       },
       "stats": {
-        "views": 305,
+        "views": 306,
         "likes": 3,
         "comments": 2,
         "estimatedMinutesWatched": 0.0,
         "averageViewDuration": 0.0,
         "subscribersGained": 0,
-        "lastUpdated": "2026-08-28T10:54:24.200768+00:00",
+        "lastUpdated": "2026-08-29T09:10:28.274836+00:00",
         "videoId": "_ZYUw14jj_I"
       }
     },
@@ -194,13 +194,13 @@
         "distrokid": ""
       },
       "stats": {
-        "views": 66,
+        "views": 68,
         "likes": 0,
         "comments": 1,
         "estimatedMinutesWatched": 0.0,
         "averageViewDuration": 0.0,
         "subscribersGained": 0,
-        "lastUpdated": "2026-08-28T10:54:24.200772+00:00",
+        "lastUpdated": "2026-08-29T09:10:28.274839+00:00",
         "videoId": "Bn4Cmx-dJJI"
       }
     },
@@ -226,13 +226,13 @@
         "distrokid": ""
       },
       "stats": {
-        "views": 0,
+        "views": 5,
         "likes": 0,
         "comments": 0,
         "estimatedMinutesWatched": 0.0,
         "averageViewDuration": 0.0,
         "subscribersGained": 0,
-        "lastUpdated": "2026-08-28T10:54:24.200776+00:00",
+        "lastUpdated": "2026-08-29T09:10:28.274843+00:00",
         "videoId": "Z-kNWAqN1hY"
       }
     },
@@ -258,13 +258,13 @@
         "distrokid": "https://distrokid.com/hyperfollow/vmone/grackle?ref=release"
       },
       "stats": {
-        "views": 59,
+        "views": 75,
         "likes": 2,
         "comments": 1,
         "estimatedMinutesWatched": 0.0,
         "averageViewDuration": 0.0,
         "subscribersGained": 0,
-        "lastUpdated": "2026-08-28T10:54:24.200784+00:00",
+        "lastUpdated": "2026-08-29T09:10:28.274850+00:00",
         "videoId": "ZZXL6ikbii8"
       }
     },
@@ -787,26 +787,68 @@
       "id": "single-release",
       "name": "Single Release",
       "steps": [
-        { "id": "create-short", "label": "Create 9:16 Short hook" },
-        { "id": "create-lyric", "label": "Create lyric video" },
-        { "id": "upload-yt", "label": "Upload to YouTube" },
-        { "id": "upload-ig", "label": "Upload to Instagram" },
-        { "id": "upload-fb", "label": "Upload to Facebook" },
-        { "id": "upload-threads", "label": "Post to Threads" },
-        { "id": "first-comment", "label": "Add first comment with Linktree" },
-        { "id": "set-video-id", "label": "Add YouTube video ID to content.json" },
-        { "id": "reply-comments", "label": "Reply to comments in the first hour" }
+        {
+          "id": "create-short",
+          "label": "Create 9:16 Short hook"
+        },
+        {
+          "id": "create-lyric",
+          "label": "Create lyric video"
+        },
+        {
+          "id": "upload-yt",
+          "label": "Upload to YouTube"
+        },
+        {
+          "id": "upload-ig",
+          "label": "Upload to Instagram"
+        },
+        {
+          "id": "upload-fb",
+          "label": "Upload to Facebook"
+        },
+        {
+          "id": "upload-threads",
+          "label": "Post to Threads"
+        },
+        {
+          "id": "first-comment",
+          "label": "Add first comment with Linktree"
+        },
+        {
+          "id": "set-video-id",
+          "label": "Add YouTube video ID to content.json"
+        },
+        {
+          "id": "reply-comments",
+          "label": "Reply to comments in the first hour"
+        }
       ]
     },
     {
       "id": "ep-release",
       "name": "EP / Album Release",
       "steps": [
-        { "id": "cover-art", "label": "Create cover art" },
-        { "id": "lead-single-short", "label": "Create lead single Short" },
-        { "id": "lead-single-lyric", "label": "Create lead single lyric video" },
-        { "id": "schedule-songs", "label": "Schedule all songs" },
-        { "id": "linktree", "label": "Update Linktree with release links" }
+        {
+          "id": "cover-art",
+          "label": "Create cover art"
+        },
+        {
+          "id": "lead-single-short",
+          "label": "Create lead single Short"
+        },
+        {
+          "id": "lead-single-lyric",
+          "label": "Create lead single lyric video"
+        },
+        {
+          "id": "schedule-songs",
+          "label": "Schedule all songs"
+        },
+        {
+          "id": "linktree",
+          "label": "Update Linktree with release links"
+        }
       ]
     }
   ],
@@ -826,10 +868,26 @@
         "last-night-of-summer"
       ],
       "tasks": [
-        { "id": "create-shorts", "label": "Create 9:16 Shorts for all 6 tracks", "completed": false },
-        { "id": "create-lyrics", "label": "Create lyric videos for all 6 tracks", "completed": false },
-        { "id": "post-all", "label": "Post all 6 Shorts on scheduled dates", "completed": false },
-        { "id": "add-video-ids", "label": "Add YouTube video IDs to content.json", "completed": false }
+        {
+          "id": "create-shorts",
+          "label": "Create 9:16 Shorts for all 6 tracks",
+          "completed": false
+        },
+        {
+          "id": "create-lyrics",
+          "label": "Create lyric videos for all 6 tracks",
+          "completed": false
+        },
+        {
+          "id": "post-all",
+          "label": "Post all 6 Shorts on scheduled dates",
+          "completed": false
+        },
+        {
+          "id": "add-video-ids",
+          "label": "Add YouTube video IDs to content.json",
+          "completed": false
+        }
       ]
     }
   ]
