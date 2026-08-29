@@ -177,6 +177,11 @@
       planParseBtn.addEventListener('click', parseReleaseJson);
     }
 
+    const generateReleaseBtn = document.getElementById('generate-release-prompt');
+    if (generateReleaseBtn) {
+      generateReleaseBtn.addEventListener('click', generateReleasePlanPrompt);
+    }
+
     populateReleaseSelect();
   }
 
@@ -1113,7 +1118,7 @@
   }
 
   function generateReleasePlanPrompt() {
-    const type = document.getElementById('release-type').value;
+    const type = document.getElementById('plan-release-type').value;
     const concept = document.getElementById('plan-concept').value.trim();
     const genre = document.getElementById('plan-genre').value.trim();
     const moods = document.getElementById('plan-moods').value.trim();
