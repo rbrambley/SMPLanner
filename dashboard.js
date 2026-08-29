@@ -150,6 +150,8 @@
         document.querySelectorAll('.plan-panel').forEach((el) => el.classList.add('hidden'));
         const target = document.getElementById('plan-' + e.target.dataset.plan);
         if (target) target.classList.remove('hidden');
+        const config = document.getElementById('plan-config');
+        if (config) config.classList.toggle('hidden', e.target.dataset.plan === 'ai-json');
       });
     }
 
@@ -177,9 +179,14 @@
       planParseBtn.addEventListener('click', parseReleaseJson);
     }
 
+    const generateNewSongBtn = document.getElementById('generate-new-song-prompt');
+    if (generateNewSongBtn) {
+      generateNewSongBtn.addEventListener('click', generateNewSongPrompt);
+    }
+
     const generateReleaseBtn = document.getElementById('generate-release-prompt');
     if (generateReleaseBtn) {
-      generateReleaseBtn.addEventListener('click', generateReleasePlanPrompt);
+      generateReleaseBtn.addEventListener('click', generateBuildReleasePrompt);
     }
 
     populateReleaseSelect();
@@ -862,10 +869,12 @@
   function renderPlan() {
     // toggle plan sub-panels
     const active = document.querySelector('.plan-tabs button.active');
-    const panel = active ? active.dataset.plan : 'release';
+    const panel = active ? active.dataset.plan : 'new-song';
     document.querySelectorAll('.plan-panel').forEach((el) => el.classList.add('hidden'));
     const target = document.getElementById('plan-' + panel);
     if (target) target.classList.remove('hidden');
+    const config = document.getElementById('plan-config');
+    if (config) config.classList.toggle('hidden', panel === 'ai-json');
 
     const picker = document.getElementById('plan-song-picker');
     if (!picker) return;
@@ -1117,31 +1126,37 @@
     `;
   }
 
-  function generateReleasePlanPrompt() {
-    const type = document.getElementById('plan-release-type').value;
-    const concept = document.getElementById('plan-concept').value.trim();
-    const genre = document.getElementById('plan-genre').value.trim();
-    const moods = document.getElementById('plan-moods').value.trim();
-    const themes = document.getElementById('plan-themes').value.trim();
-    const refs = document.getElementById('plan-references').value.trim();
-    const avoid = document.getElementById('plan-avoid').value.trim();
-
-    const selectedIds = Array.from(document.querySelectorAll('.plan-song-check:checked')).map((cb) => cb.value);
-    const selectedSongs = selectedIds.map((id) => getSongById(id)).filter(Boolean);
+  function buildPlanPrompt(type, concept, genre, moods, themes, refs, avoid, selectedSongs) {
     const selectedText = selectedSongs.length
       ? selectedSongs.map((s) => `- ${s.title} (${(s.genres || []).join(', ')})`).join('\n')
-      : 'none';
+      : 'No existing songs selected — generate all tracks from the concept.';
 
     let prompt = '';
     if (type === 'single') {
       prompt = `Create a concept for one single song by VMOne (an independent rap/pop/dance artist using Suno).\n\n${selectedSongs.length ? 'Selected song: ' + selectedSongs[0].title + '\n' : ''}Song concept: ${concept}\nGenre: ${genre}\nMoods: ${moods}\nTheme words or imagery: ${themes || 'none provided'}\nReference artists or sounds: ${refs || 'none provided'}\nAvoid / IP restrictions: ${avoid || 'none'}\n\nOutput a JSON object with these keys:\n- title\n- genre\n- bpm\n- duration_in_seconds\n- hook (one catchy 1-2 line lyric)\n- title_card (big bold text for the first 1-2 seconds of a 9:16 Short)\n- story (one paragraph)\n- visual_concept (one paragraph)\n- monetization_note (safe or growth-only and why)\n- instagram_caption_question\n\nDo not use emojis. Do not include copyrighted brand names unless explicitly allowed.`;
     } else if (type === 'ep') {
-      prompt = `Create an EP plan for VMOne (an independent rap/pop/dance artist using Suno).\n\nConcept: ${concept}\nGenre: ${genre}\nMoods: ${moods}\nTheme words or imagery: ${themes || 'none provided'}\nReference artists or sounds: ${refs || 'none provided'}\nAvoid / IP restrictions: ${avoid || 'none'}\n\nSelected songs from the catalog:\n${selectedText}\n\nUse the selected songs as the track list if enough are provided, or fill in additional tracks to create a cohesive EP. Output a JSON object with:\n- ep_title\n- genre\n- mood_profile\n- total_runtime\n- lead_single (which track number, 1-based)\n- tracks: array of objects with title, role (opener/single/ballad/wildcard/closer), bpm, duration, theme, hook, monetization_note\n\nDo not use emojis. Do not include copyrighted brand names unless explicitly allowed.`;
+      prompt = `Create an EP plan for VMOne (an independent rap/pop/dance artist using Suno).\n\nConcept: ${concept}\nGenre: ${genre}\nMoods: ${moods}\nTheme words or imagery: ${themes || 'none provided'}\nReference artists or sounds: ${refs || 'none provided'}\nAvoid / IP restrictions: ${avoid || 'none'}\n\nSelected songs from the catalog:\n${selectedText}\n\n${selectedSongs.length ? 'Use the selected songs as the track list if enough are provided, or fill in additional tracks to create a cohesive EP.' : 'Generate all tracks from the concept.'} Output a JSON object with:\n- ep_title\n- genre\n- mood_profile\n- total_runtime\n- lead_single (which track number, 1-based)\n- tracks: array of objects with title, role (opener/single/ballad/wildcard/closer), bpm, duration, theme, hook, monetization_note\n\nDo not use emojis. Do not include copyrighted brand names unless explicitly allowed.`;
     } else {
-      prompt = `Create a full album plan for VMOne (an independent rap/pop/dance artist using Suno).\n\nConcept: ${concept}\nGenre: ${genre}\nMoods: ${moods}\nTheme words or imagery: ${themes || 'none provided'}\nReference artists or sounds: ${refs || 'none provided'}\nAvoid / IP restrictions: ${avoid || 'none'}\n\nSelected songs from the catalog:\n${selectedText}\n\nUse the selected songs as the basis for the album, or expand with new tracks to create a cohesive record. Output a JSON object with:\n- album_title\n- slug (folder name, kebab-case)\n- genre and style notes\n- mood_profile\n- total_runtime and average track length\n- tracks: array with number, working title, role (opener/single/ballad/wildcard/closer), mood, bpm, duration, one-sentence theme, hook\n- album_story_arc (one paragraph)\n- lead_singles (track numbers)\n- recommended_tags for YouTube and Suno\n\nDo not use emojis. Do not include copyrighted brand names unless explicitly allowed.`;
+      prompt = `Create a full album plan for VMOne (an independent rap/pop/dance artist using Suno).\n\nConcept: ${concept}\nGenre: ${genre}\nMoods: ${moods}\nTheme words or imagery: ${themes || 'none provided'}\nReference artists or sounds: ${refs || 'none provided'}\nAvoid / IP restrictions: ${avoid || 'none'}\n\nSelected songs from the catalog:\n${selectedText}\n\n${selectedSongs.length ? 'Use the selected songs as the basis for the album, or expand with new tracks to create a cohesive record.' : 'Generate all tracks from the concept.'} Output a JSON object with:\n- album_title\n- slug (folder name, kebab-case)\n- genre and style notes\n- mood_profile\n- total_runtime and average track length\n- tracks: array with number, working title, role (opener/single/ballad/wildcard/closer), mood, bpm, duration, one-sentence theme, hook\n- album_story_arc (one paragraph)\n- lead_singles (track numbers)\n- recommended_tags for YouTube and Suno\n\nDo not use emojis. Do not include copyrighted brand names unless explicitly allowed.`;
     }
 
-    const out = document.getElementById('plan-release-output');
+    return prompt;
+  }
+
+  function getPlanInputs() {
+    return {
+      type: document.getElementById('plan-release-type').value,
+      concept: document.getElementById('plan-concept').value.trim(),
+      genre: document.getElementById('plan-genre').value.trim(),
+      moods: document.getElementById('plan-moods').value.trim(),
+      themes: document.getElementById('plan-themes').value.trim(),
+      refs: document.getElementById('plan-references').value.trim(),
+      avoid: document.getElementById('plan-avoid').value.trim()
+    };
+  }
+
+  function showPlanPrompt(outputId, prompt) {
+    const out = document.getElementById(outputId);
     out.classList.remove('hidden');
     out.innerHTML = `
       <h3>Copy-paste this into an AI</h3>
@@ -1149,6 +1164,20 @@
       <button class="copy" data-label="AI prompt">Copy Prompt</button>
       <p class="meta">Paste the AI's JSON response into Plan → From AI JSON to import the release.</p>
     `;
+  }
+
+  function generateNewSongPrompt() {
+    const inputs = getPlanInputs();
+    const prompt = buildPlanPrompt(inputs.type, inputs.concept, inputs.genre, inputs.moods, inputs.themes, inputs.refs, inputs.avoid, []);
+    showPlanPrompt('plan-new-song-output', prompt);
+  }
+
+  function generateBuildReleasePrompt() {
+    const inputs = getPlanInputs();
+    const selectedIds = Array.from(document.querySelectorAll('.plan-song-check:checked')).map((cb) => cb.value);
+    const selectedSongs = selectedIds.map((id) => getSongById(id)).filter(Boolean);
+    const prompt = buildPlanPrompt(inputs.type, inputs.concept, inputs.genre, inputs.moods, inputs.themes, inputs.refs, inputs.avoid, selectedSongs);
+    showPlanPrompt('plan-build-release-output', prompt);
   }
 
   function bulkImportSongs() {

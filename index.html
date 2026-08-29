@@ -165,12 +165,12 @@
     <section id="plan" class="tab">
       <h2>Plan</h2>
       <div class="plan-tabs">
-        <button type="button" data-plan="release" class="active">New Release</button>
+        <button type="button" data-plan="new-song" class="active">New Song</button>
+        <button type="button" data-plan="build-release">Build Release</button>
         <button type="button" data-plan="ai-json">From AI JSON</button>
       </div>
 
-      <div id="plan-release" class="plan-panel active">
-        <h3>Build a release from the library</h3>
+      <div id="plan-config" class="plan-config">
         <label>
           Release type
           <select id="plan-release-type">
@@ -203,7 +203,18 @@
           Avoid / IP restrictions
           <input type="text" id="plan-avoid" />
         </label>
+      </div>
 
+      <div id="plan-new-song" class="plan-panel active">
+        <h3>Generate new songs from a concept</h3>
+        <p class="meta">The AI will create brand-new song(s) from the concept above. No existing songs are used.</p>
+        <button type="button" id="generate-new-song-prompt">Generate New Song Prompt</button>
+        <div id="plan-new-song-output" class="output hidden"></div>
+      </div>
+
+      <div id="plan-build-release" class="plan-panel hidden">
+        <h3>Build a release from existing songs</h3>
+        <p class="meta">Pick songs from your library. The AI will build a release around them and fill in gaps if needed.</p>
         <div class="song-picker-wrap">
           <div class="song-picker-actions">
             <button type="button" id="plan-select-all">Select all</button>
@@ -211,9 +222,8 @@
           </div>
           <div id="plan-song-picker" class="song-picker"></div>
         </div>
-
-        <button type="button" id="generate-release-prompt">Generate AI Prompt</button>
-        <div id="plan-release-output" class="output hidden"></div>
+        <button type="button" id="generate-release-prompt">Generate Release Prompt</button>
+        <div id="plan-build-release-output" class="output hidden"></div>
       </div>
 
       <div id="plan-ai-json" class="plan-panel hidden">
