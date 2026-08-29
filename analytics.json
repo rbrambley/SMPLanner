@@ -1,18 +1,48 @@
 {
-  "lastUpdated": "2026-08-28T10:54:24.199785+00:00",
+  "lastUpdated": "2026-08-29T09:10:28.273819+00:00",
   "channelId": "UC7yY7QSCrBiY8a0ES2xQjbw",
   "period": {
-    "start": "2026-07-28",
-    "end": "2026-08-27"
+    "start": "2026-07-29",
+    "end": "2026-08-28"
   },
   "videos": [
+    {
+      "videoId": "Z-kNWAqN1hY",
+      "title": "Dirty Dac - slide through Dac #dacula #dirtydac #rap #georgia #vmone #newmusic  #suno #aimusic",
+      "publishedAt": "2026-08-29T00:00:32Z",
+      "videoType": "Unknown",
+      "latest": {
+        "views": 5,
+        "likes": 0,
+        "comments": 0,
+        "estimatedMinutesWatched": 0.0,
+        "averageViewDuration": 0.0,
+        "subscribersGained": 0
+      },
+      "daily": []
+    },
+    {
+      "videoId": "d94cFPmTCpg",
+      "title": "Brand New Day — hype is loud  #rap #aimusic #spiderman #marvelstudios #spidermanbrandnewday",
+      "publishedAt": "2026-08-28T12:23:19Z",
+      "videoType": "Unknown",
+      "latest": {
+        "views": 0,
+        "likes": 0,
+        "comments": 0,
+        "estimatedMinutesWatched": 0.0,
+        "averageViewDuration": 0.0,
+        "subscribersGained": 0
+      },
+      "daily": []
+    },
     {
       "videoId": "tGOSjdti5v8",
       "title": "VMOne — Night Shift Halo (Official Lyric Video)",
       "publishedAt": "2026-08-27T23:45:30Z",
       "videoType": "Lyric Video",
       "latest": {
-        "views": 0,
+        "views": 1,
         "likes": 0,
         "comments": 0,
         "estimatedMinutesWatched": 0.0,
@@ -27,7 +57,7 @@
       "publishedAt": "2026-08-27T16:30:04Z",
       "videoType": "Unknown",
       "latest": {
-        "views": 59,
+        "views": 75,
         "likes": 2,
         "comments": 1,
         "estimatedMinutesWatched": 0.0,
@@ -42,7 +72,7 @@
       "publishedAt": "2026-08-27T01:04:56Z",
       "videoType": "Lyric Video",
       "latest": {
-        "views": 8,
+        "views": 13,
         "likes": 0,
         "comments": 0,
         "estimatedMinutesWatched": 0.0,
@@ -57,8 +87,8 @@
       "publishedAt": "2026-08-27T00:00:27Z",
       "videoType": "Unknown",
       "latest": {
-        "views": 190,
-        "likes": 1,
+        "views": 204,
+        "likes": 2,
         "comments": 1,
         "estimatedMinutesWatched": 0.0,
         "averageViewDuration": 0.0,
@@ -72,24 +102,9 @@
       "publishedAt": "2026-08-26T00:00:38Z",
       "videoType": "Unknown",
       "latest": {
-        "views": 66,
+        "views": 68,
         "likes": 0,
         "comments": 1,
-        "estimatedMinutesWatched": 0.0,
-        "averageViewDuration": 0.0,
-        "subscribersGained": 0
-      },
-      "daily": []
-    },
-    {
-      "videoId": "Z-kNWAqN1hY",
-      "title": "Dirty Dac - slide through Dac #dacula #dirtydac #rap #georgia #vmone #newmusic  #suno #aimusic",
-      "publishedAt": "2026-08-25T21:52:25Z",
-      "videoType": "Unknown",
-      "latest": {
-        "views": 0,
-        "likes": 0,
-        "comments": 0,
         "estimatedMinutesWatched": 0.0,
         "averageViewDuration": 0.0,
         "subscribersGained": 0
@@ -102,7 +117,7 @@
       "publishedAt": "2026-08-25T00:00:08Z",
       "videoType": "Unknown",
       "latest": {
-        "views": 325,
+        "views": 327,
         "likes": 1,
         "comments": 1,
         "estimatedMinutesWatched": 0.0,
@@ -117,7 +132,7 @@
       "publishedAt": "2026-08-24T12:00:29Z",
       "videoType": "Unknown",
       "latest": {
-        "views": 305,
+        "views": 306,
         "likes": 3,
         "comments": 2,
         "estimatedMinutesWatched": 0.0,
@@ -147,7 +162,7 @@
       "publishedAt": "2026-08-20T23:58:11Z",
       "videoType": "Lyric Video",
       "latest": {
-        "views": 4,
+        "views": 6,
         "likes": 0,
         "comments": 0,
         "estimatedMinutesWatched": 0.0,
@@ -207,7 +222,7 @@
       "publishedAt": "2026-08-19T09:58:15Z",
       "videoType": "Lyric Video",
       "latest": {
-        "views": 4,
+        "views": 5,
         "likes": 0,
         "comments": 0,
         "estimatedMinutesWatched": 0.0,
@@ -267,7 +282,7 @@
       "publishedAt": "2026-08-18T00:14:42Z",
       "videoType": "Unknown",
       "latest": {
-        "views": 473,
+        "views": 474,
         "likes": 4,
         "comments": 2,
         "estimatedMinutesWatched": 0.0,
@@ -312,7 +327,7 @@
       "publishedAt": "2026-08-15T10:21:05Z",
       "videoType": "Lyric Video",
       "latest": {
-        "views": 3,
+        "views": 4,
         "likes": 0,
         "comments": 1,
         "estimatedMinutesWatched": 0.0,
@@ -409,6 +424,14 @@
       "likes": 2,
       "comments": 3,
       "estimatedMinutesWatched": 21.0,
+      "subscribersGained": 1
+    },
+    {
+      "day": "2026-08-26",
+      "views": 261,
+      "likes": 0,
+      "comments": 0,
+      "estimatedMinutesWatched": 20.0,
       "subscribersGained": 1
     }
   ]
