@@ -4,7 +4,8 @@
   let data = null;
   let analytics = null;
   const STORAGE_KEY = 'vmone_dashboard_state';
-  let state = { schedule: [], tasks: {} };
+  const SCHEMA_VERSION = 1;
+  let state = { schedule: {}, tasks: {}, pipeline: {} };
   let pendingSong = null;
   let pendingSchedule = null;
   let pendingRelease = null;
@@ -37,22 +38,28 @@
       data = await res.json();
       data.templates = data.templates || [];
       data.releases = data.releases || [];
+      data.tasks = data.tasks || [];
+      data.schedule = data.schedule || [];
+      data.schema_version = data.schema_version || SCHEMA_VERSION;
       (data.songs || []).forEach((song) => {
         if (!song.pipeline_status) song.pipeline_status = 'planned';
       });
+      normalizeSchedule();
     } catch (err) {
       showError('Could not load content.json. If you are opening this file locally, run a local server with: python -m http.server');
       return;
     }
     loadState();
-    (data.songs || []).forEach((song) => {
-      if (state.pipeline && state.pipeline[song.id]) {
-        song.pipeline_status = state.pipeline[song.id];
-      }
-    });
+    applyPipelineState();
     setupTabs();
     setupForms();
     setupDownload();
+    window.addEventListener('storage', (event) => {
+      if (event.key !== STORAGE_KEY) return;
+      loadState();
+      applyPipelineState();
+      renderAll();
+    });
     await loadAnalytics();
     renderAll();
   }
@@ -71,14 +78,44 @@
     today.innerHTML = `<div class="error">${msg}</div>`;
   }
 
+  function scheduleId(entry) {
+    return entry.id || `post-${entry.date}-${entry.song_id}`;
+  }
+
+  function normalizeSchedule() {
+    data.schedule.forEach((entry) => {
+      entry.id = scheduleId(entry);
+      entry.completed = entry.completed || {};
+    });
+    data.schedule.sort((a, b) => a.date.localeCompare(b.date) || a.id.localeCompare(b.id));
+  }
+
+  function applyPipelineState() {
+    (data.songs || []).forEach((song) => {
+      if (state.pipeline[song.id]) song.pipeline_status = state.pipeline[song.id];
+    });
+  }
+
   function loadState() {
     try {
       const saved = localStorage.getItem(STORAGE_KEY);
       if (saved) state = JSON.parse(saved);
     } catch (e) {
-      state = { schedule: [], tasks: {}, pipeline: {} };
+      state = { schedule: {}, tasks: {}, pipeline: {} };
     }
-    if (!state.pipeline) state.pipeline = {};
+    state = state || {};
+    state.tasks = state.tasks || {};
+    state.pipeline = state.pipeline || {};
+    if (Array.isArray(state.schedule)) {
+      const migrated = {};
+      state.schedule.forEach((saved, index) => {
+        if (!saved || !data.schedule[index]) return;
+        migrated[scheduleId(data.schedule[index])] = saved.completed ? saved : { completed: saved };
+      });
+      state.schedule = migrated;
+    } else {
+      state.schedule = state.schedule || {};
+    }
   }
 
   function saveState() {
@@ -118,14 +155,6 @@
     if (suggestBtn) {
       suggestBtn.addEventListener('click', () => {
         document.getElementById('song-date').value = getNextAvailableDate();
-      });
-    }
-
-    const releaseForm = document.getElementById('release-plan-form');
-    if (releaseForm) {
-      releaseForm.addEventListener('submit', (e) => {
-        e.preventDefault();
-        generateReleasePlanPrompt();
       });
     }
 
@@ -221,7 +250,7 @@
     const lyrics = song.lyrics || song.full_lyrics || hook;
     const notes = song.story || song.visual_concept || song.theme || song.notes || '';
     const monetizationNote = (song.monetization_note || '').toLowerCase();
-    const monetization = monetizationNote.includes('growth') || monetizationNote.includes('safe only') ? 'growth-only' : 'monetizable';
+    const monetization = song.monetization === 'growth-only' || monetizationNote.includes('growth') || monetizationNote.includes('safe only') ? 'growth-only' : 'monetizable';
     const ip = song.monetization_note || song.ip_note || song.ip_warning || song.avoid || '';
     const distrokid = song.distrokid || song.streaming_link || '';
 
@@ -265,26 +294,41 @@
     return data.songs.find((s) => s.id === id);
   }
 
-  function isCompleted(index, platform) {
-    const saved = state.schedule[index];
+  function scheduledPlatforms(entry) {
+    return Object.keys(entry.platforms || {}).filter((platform) => Boolean(entry.platforms[platform]));
+  }
+
+  function isCompleted(entryOrId, platform) {
+    const entry = typeof entryOrId === 'string'
+      ? data.schedule.find((item) => scheduleId(item) === entryOrId)
+      : entryOrId;
+    if (!entry) return false;
+    const saved = state.schedule[scheduleId(entry)];
     if (saved && saved.completed && typeof saved.completed[platform] === 'boolean') {
       return saved.completed[platform];
     }
-    const base = data.schedule[index].completed;
-    return base ? base[platform] : false;
+    return Boolean(entry.completed && entry.completed[platform]);
   }
 
-  function setCompleted(index, platform, value) {
-    if (!state.schedule[index]) state.schedule[index] = {};
-    if (!state.schedule[index].completed) state.schedule[index].completed = {};
-    state.schedule[index].completed[platform] = value;
+  function isScheduleCompleted(entry) {
+    const platforms = scheduledPlatforms(entry);
+    return platforms.length > 0 && platforms.every((platform) => isCompleted(entry, platform));
+  }
+
+  function setCompleted(entryId, platform, value) {
+    if (!state.schedule[entryId]) state.schedule[entryId] = {};
+    if (!state.schedule[entryId].completed) state.schedule[entryId].completed = {};
+    state.schedule[entryId].completed[platform] = value;
+    syncSongProgressFromSchedule(entryId);
     saveState();
-    syncCompleteCheckboxes(index, platform, value);
-    renderProgress();
+    syncCompleteCheckboxes(entryId, platform, value);
+    renderFlow();
+    renderReleases();
+    renderTasks();
   }
 
-  function syncCompleteCheckboxes(index, platform, value) {
-    document.querySelectorAll(`.complete-check[data-index="${index}"][data-platform="${platform}"]`).forEach((input) => {
+  function syncCompleteCheckboxes(entryId, platform, value) {
+    document.querySelectorAll(`.complete-check[data-entry-id="${entryId}"][data-platform="${platform}"]`).forEach((input) => {
       input.checked = value;
     });
   }
@@ -295,6 +339,33 @@
 
   function setTaskCompleted(id, value) {
     state.tasks[id] = value;
+    data.releases.forEach((release) => {
+      const task = (release.tasks || []).find((item) => item.id === id);
+      if (task && task.song_id) {
+        const platformByTask = { 'upload-yt': 'youtube_short', 'create-lyric': 'youtube_lyric_video', 'upload-ig': 'instagram_reel', 'upload-fb': 'facebook_reel', 'upload-threads': 'threads' };
+        const platform = platformByTask[task.templateId];
+        if (platform) {
+          data.schedule.filter((entry) => entry.song_id === task.song_id && scheduledPlatforms(entry).includes(platform)).forEach((entry) => {
+            const entryId = scheduleId(entry);
+            if (!state.schedule[entryId]) state.schedule[entryId] = { completed: {} };
+            if (!state.schedule[entryId].completed) state.schedule[entryId].completed = {};
+            state.schedule[entryId].completed[platform] = value;
+          });
+        }
+        const stageByTask = { 'create-short': 'short-created', 'upload-yt': 'short-scheduled', 'create-lyric': 'lyric-created' };
+        if (value && stageByTask[task.templateId]) {
+          const song = getSongById(task.song_id);
+          const nextStage = stageByTask[task.templateId];
+          if (song && getStageIndex(nextStage) > getStageIndex(song.pipeline_status || 'planned')) {
+            song.pipeline_status = nextStage;
+            state.pipeline[song.id] = nextStage;
+          }
+        }
+      }
+      if ((release.tasks || []).length) {
+        release.status = release.tasks.every((item) => isTaskCompleted(item.id, item.completed)) ? 'complete' : 'planned';
+      }
+    });
     saveState();
   }
 
@@ -304,20 +375,20 @@
   }
 
   function todayStr() {
-    return new Date().toISOString().split('T')[0];
+    return toISODate(new Date());
   }
 
-  function getNextAvailableDate() {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+  function getNextAvailableDate(fromDate) {
+    const start = fromDate ? new Date(fromDate + 'T00:00:00') : new Date();
+    start.setHours(0, 0, 0, 0);
     for (let i = 0; i < 365; i++) {
-      const d = new Date(today);
-      d.setDate(today.getDate() + i);
+      const d = new Date(start);
+      d.setDate(start.getDate() + i);
       const ds = toISODate(d);
-      const existing = data.schedule.find((s) => s.date === ds);
-      if (!existing) return ds;
+      const isReleaseDay = [0, 2, 4].includes(d.getDay());
+      if (isReleaseDay && !data.schedule.some((entry) => entry.date === ds)) return ds;
     }
-    return toISODate(today);
+    return toISODate(start);
   }
 
   function populateReleaseSelect() {
@@ -405,7 +476,7 @@
         caption: baseCaption.replace(question, question).replace(/\s+/g, ' ').trim()
       },
       threads: {
-        caption: `${baseCaption}\n\nFull video: ${linktree}`
+        caption: `${baseCaption}\n\nLink in bio.`
       },
       first_comment: data.settings.default_first_comment,
       title_card: titleCard,
@@ -444,8 +515,8 @@
   function renderToday() {
     const today = todayStr();
     const todayEl = document.getElementById('today');
-    const index = data.schedule.findIndex((s) => s.date === today);
-    const next = index >= 0 ? data.schedule[index] : data.schedule.find((s) => s.date >= today);
+    const upcoming = data.schedule.filter((entry) => entry.date >= today).sort((a, b) => a.date.localeCompare(b.date));
+    const next = upcoming.find((entry) => entry.date === today) || upcoming[0];
 
     if (!next) {
       todayEl.innerHTML = '<h2>Today</h2><div class="card"><p>No upcoming posts scheduled.</p></div>';
@@ -453,21 +524,23 @@
     }
 
     const song = getSongById(next.song_id);
+    if (!song) {
+      todayEl.innerHTML = `<h2>Today</h2><div class="card"><p>Scheduled song "${escapeHtml(next.song_id)}" is missing from the library.</p></div>`;
+      return;
+    }
     const pkgs = generateSongPackages(song);
     const isToday = next.date === today;
     const dateDisplay = formatDate(next.date);
-    const nextIndex = data.schedule.indexOf(next);
+    const entryId = scheduleId(next);
 
     let html = `<h2>${isToday ? 'Today' : 'Next Up'} — ${dateDisplay}</h2>`;
     html += `<div class="card">`;
     html += `<div class="card-header">`;
-    html += `<h3>${song.title}</h3>`;
-    html += `<div class="meta"><span class="label">${song.genres.join(', ')}</span><span class="label ${song.monetization}">${song.monetization}</span><span class="label">${song.status}</span></div>`;
+    html += `<h3>${escapeHtml(song.title)}</h3>`;
+    html += `<div class="meta"><span class="label">${escapeHtml(song.genres.join(', '))}</span><span class="label ${song.monetization}">${escapeHtml(song.monetization)}</span><span class="label">${escapeHtml(song.status)}</span></div>`;
     html += `<div class="row">`;
-    Object.keys(next.platforms).forEach((platform) => {
-      if (next.platforms[platform]) {
-        html += `<span class="label">${platformName(platform)} ${next.platforms[platform]}</span>`;
-      }
+    scheduledPlatforms(next).forEach((platform) => {
+      html += `<span class="label">${platformName(platform)} ${escapeHtml(next.platforms[platform])}</span>`;
     });
     html += `</div>`;
     html += `</div>`;
@@ -487,10 +560,10 @@
     html += `</tbody></table>`;
 
     html += `<div class="row">`;
-    Object.keys(next.platforms).forEach((platform) => {
+    scheduledPlatforms(next).forEach((platform) => {
       const name = platformName(platform);
-      const checked = isCompleted(nextIndex, platform) ? 'checked' : '';
-      html += `<label><input type="checkbox" class="complete-check" data-index="${nextIndex}" data-platform="${platform}" ${checked}> ${name}</label>`;
+      const checked = isCompleted(next, platform) ? 'checked' : '';
+      html += `<label><input type="checkbox" class="complete-check" data-entry-id="${entryId}" data-platform="${platform}" ${checked}> ${name}</label>`;
     });
     html += `</div>`;
 
@@ -543,118 +616,48 @@
     ].join('\n');
   }
 
-  function renderWeek() {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const weekStart = getWeekStart(today);
-    const list = document.getElementById('week-list');
-    const todayStr = toISODate(today);
-
-    let html = '<div class="calendar">';
-    for (let i = 0; i < 7; i++) {
-      const d = new Date(weekStart);
-      d.setDate(weekStart.getDate() + i);
-      const dateStr = toISODate(d);
-      const entry = data.schedule.find((s) => s.date === dateStr);
-      const isPast = dateStr < toISODate(new Date());
-      const isToday = dateStr === todayStr;
-      const dayName = d.toLocaleDateString('en-US', { weekday: 'short' });
-      const dateLabel = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-
-      let cellClass = 'day';
-      if (isPast) cellClass += ' past';
-      if (isToday) cellClass += ' today';
-
-      html += `<div class="${cellClass}" data-date="${dateStr}">`;
-      html += `<div class="day-header"><strong>${dayName}</strong><span>${dateLabel}</span></div>`;
-
-      if (entry) {
-        const index = data.schedule.indexOf(entry);
-        const song = getSongById(entry.song_id);
-        const pkgs = generateSongPackages(song);
-        const packageText = buildFullPackageText(song, pkgs);
-        html += `<div class="day-song">${song.title}</div>`;
-        html += `<div class="day-meta"><span class="label ${song.monetization}">${song.monetization}</span></div>`;
-        html += `<div class="day-times">`;
-        Object.keys(entry.platforms).forEach((platform) => {
-          if (entry.platforms[platform]) {
-            html += `<span>${platformName(platform)} ${entry.platforms[platform]}</span>`;
-          }
-        });
-        html += `</div>`;
-        html += `<pre class="hidden-package">${escapeHtml(packageText)}</pre>`;
-        html += `<button class="copy-small day-copy" data-label="full package">Copy full package</button>`;
-        html += `<div class="day-checks">`;
-        Object.keys(entry.platforms).forEach((platform) => {
-          const checked = isCompleted(index, platform) ? 'checked' : '';
-          html += `<label><input type="checkbox" class="complete-check" data-index="${index}" data-platform="${platform}" ${checked}> ${platformName(platform)}</label>`;
-        });
-        html += `</div>`;
-      } else {
-        html += `<div class="day-empty">No post scheduled</div>`;
-      }
-
-      html += `</div>`;
-    }
-    html += '</div>';
-    list.innerHTML = html;
+  function renderCalendarEntry(entry) {
+    const song = getSongById(entry.song_id);
+    if (!song) return '';
+    const entryId = scheduleId(entry);
+    const pkgs = generateSongPackages(song);
+    let html = `<div class="calendar-entry"><div class="day-song">${escapeHtml(song.title)}</div>`;
+    html += `<div class="day-meta"><span class="label ${song.monetization}">${escapeHtml(song.monetization)}</span></div><div class="day-times">`;
+    scheduledPlatforms(entry).forEach((platform) => { html += `<span>${platformName(platform)} ${escapeHtml(entry.platforms[platform])}</span>`; });
+    html += `</div><pre class="hidden-package">${escapeHtml(buildFullPackageText(song, pkgs))}</pre>`;
+    html += `<button class="copy-small day-copy" data-label="full package">Copy full package</button><div class="day-checks">`;
+    scheduledPlatforms(entry).forEach((platform) => {
+      const checked = isCompleted(entry, platform) ? 'checked' : '';
+      html += `<label><input type="checkbox" class="complete-check" data-entry-id="${entryId}" data-platform="${platform}" ${checked}> ${platformName(platform)}</label>`;
+    });
+    return html + '</div></div>';
   }
 
-  function renderNext4Weeks() {
+  function renderCalendar(containerId, days) {
     const now = new Date();
     now.setHours(0, 0, 0, 0);
     const nowStr = toISODate(now);
     const weekStart = getWeekStart(now);
-    const list = document.getElementById('next4weeks-list');
-
-    let html = '<div class="calendar" style="grid-template-columns: repeat(7, 1fr);">';
-    for (let i = 0; i < 28; i++) {
+    let html = `<div class="calendar${days > 7 ? ' calendar-four-weeks' : ''}">`;
+    for (let i = 0; i < days; i++) {
       const d = new Date(weekStart);
       d.setDate(weekStart.getDate() + i);
       const dateStr = toISODate(d);
-      const entry = data.schedule.find((s) => s.date === dateStr);
-      const isPast = dateStr < nowStr;
-      const isToday = dateStr === nowStr;
-      const dayName = d.toLocaleDateString('en-US', { weekday: 'short' });
-      const dateLabel = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-
-      let cellClass = 'day';
-      if (isPast) cellClass += ' past';
-      if (isToday) cellClass += ' today';
-
-      html += `<div class="${cellClass}" data-date="${dateStr}">`;
-      html += `<div class="day-header"><strong>${dayName}</strong><span>${dateLabel}</span></div>`;
-
-      if (entry) {
-        const index = data.schedule.indexOf(entry);
-        const song = getSongById(entry.song_id);
-        const pkgs = generateSongPackages(song);
-        const packageText = buildFullPackageText(song, pkgs);
-        html += `<div class="day-song">${song.title}</div>`;
-        html += `<div class="day-meta"><span class="label ${song.monetization}">${song.monetization}</span></div>`;
-        html += `<div class="day-times">`;
-        Object.keys(entry.platforms).forEach((platform) => {
-          if (entry.platforms[platform]) {
-            html += `<span>${platformName(platform)} ${entry.platforms[platform]}</span>`;
-          }
-        });
-        html += `</div>`;
-        html += `<pre class="hidden-package">${escapeHtml(packageText)}</pre>`;
-        html += `<button class="copy-small day-copy" data-label="full package">Copy full package</button>`;
-        html += `<div class="day-checks">`;
-        Object.keys(entry.platforms).forEach((platform) => {
-          const checked = isCompleted(index, platform) ? 'checked' : '';
-          html += `<label><input type="checkbox" class="complete-check" data-index="${index}" data-platform="${platform}" ${checked}> ${platformName(platform)}</label>`;
-        });
-        html += `</div>`;
-      } else {
-        html += `<div class="day-empty">No post scheduled</div>`;
-      }
-
-      html += `</div>`;
+      const entries = data.schedule.filter((entry) => entry.date === dateStr);
+      const classes = ['day', dateStr < nowStr ? 'past' : '', dateStr === nowStr ? 'today' : ''].filter(Boolean).join(' ');
+      html += `<div class="${classes}" data-date="${dateStr}"><div class="day-header"><strong>${d.toLocaleDateString('en-US', { weekday: 'short' })}</strong><span>${d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span></div>`;
+      html += entries.length ? entries.map(renderCalendarEntry).join('') : '<div class="day-empty">No post scheduled</div>';
+      html += '</div>';
     }
-    html += '</div>';
-    list.innerHTML = html;
+    document.getElementById(containerId).innerHTML = html + '</div>';
+  }
+
+  function renderWeek() {
+    renderCalendar('week-list', 7);
+  }
+
+  function renderNext4Weeks() {
+    renderCalendar('next4weeks-list', 28);
   }
 
   function renderLibrary() {
@@ -667,10 +670,10 @@
       const safeId = 'song-' + song.id.replace(/[^a-z0-9]/gi, '-');
       html += `<details class="song-row" data-title="${song.title.toLowerCase()}">`;
       html += `<summary>`;
-      html += `<span class="song-title">${song.title}</span>`;
-      html += `<span class="label">${song.genres.join(', ')}</span>`;
-      html += `<span class="label ${song.monetization}">${song.monetization}</span>`;
-      html += `<span class="label">${song.status}</span>`;
+      html += `<span class="song-title">${escapeHtml(song.title)}</span>`;
+      html += `<span class="label">${escapeHtml(song.genres.join(', '))}</span>`;
+      html += `<span class="label ${song.monetization}">${escapeHtml(song.monetization)}</span>`;
+      html += `<span class="label">${escapeHtml(song.status)}</span>`;
       html += `<span class="label stage stage-${song.pipeline_status || 'planned'}">${escapeHtml(getStage(song.pipeline_status).label)}</span>`;
       html += `<pre class="hidden-package" id="${safeId}">${escapeHtml(fullText)}</pre>`;
       html += `<button class="copy-small" data-target="${safeId}" data-label="full package">Copy full</button>`;
@@ -693,7 +696,7 @@
       html += renderTableRow('Hook', pkgs.hook, 'hook');
       html += `</tbody></table>`;
       if (song.notes || song.ip_note) {
-        html += `<p class="meta">${song.notes || ''} ${song.ip_note ? '(' + song.ip_note + ')' : ''}</p>`;
+        html += `<p class="meta">${escapeHtml(song.notes || '')} ${song.ip_note ? '(' + escapeHtml(song.ip_note) + ')' : ''}</p>`;
       }
       html += `</div>`;
       html += `</details>`;
@@ -723,27 +726,21 @@
     }
     if (!confirm(msg)) return;
 
-    // Save current checkbox overrides keyed by date, then rebuild state indices.
-    const completedByDate = {};
-    state.schedule.forEach((s, i) => {
-      if (s && s.completed && data.schedule[i]) {
-        completedByDate[data.schedule[i].date] = s.completed;
-      }
+    const removedEntryIds = data.schedule.filter((entry) => entry.song_id === songId).map(scheduleId);
+    data.songs = data.songs.filter((item) => item.id !== songId);
+    data.schedule = data.schedule.filter((entry) => entry.song_id !== songId);
+    data.releases.forEach((release) => {
+      release.songs = (release.songs || []).filter((id) => id !== songId);
+      release.tasks = (release.tasks || []).filter((task) => task.song_id !== songId);
     });
-
-    data.songs = data.songs.filter((s) => s.id !== songId);
-    data.schedule = data.schedule.filter((s) => s.song_id !== songId);
-
-    state.schedule = data.schedule.map((s) => {
-      const completed = completedByDate[s.date] || {};
-      return { completed };
+    data.releases = data.releases.filter((release) => release.songs.length > 0);
+    removedEntryIds.forEach((id) => delete state.schedule[id]);
+    delete state.pipeline[songId];
+    Object.keys(state.tasks).forEach((id) => {
+      if (!data.tasks.some((task) => task.id === id) && !data.releases.some((release) => (release.tasks || []).some((task) => task.id === id))) delete state.tasks[id];
     });
     saveState();
-
-    renderToday();
-    renderWeek();
-    renderLibrary();
-    renderProgress();
+    renderAll();
   }
 
   function formatNumber(n) {
@@ -760,6 +757,7 @@
       return;
     }
 
+    const periodMetrics = analytics.metricBasis === 'period-views-and-watchtime-public-engagement';
     const sorted = analytics.videos.slice().sort((a, b) => (b.latest.views || 0) - (a.latest.views || 0));
 
     let totals = { views: 0, likes: 0, comments: 0, estimatedMinutesWatched: 0, subscribersGained: 0 };
@@ -774,17 +772,17 @@
 
     summary.innerHTML = `
       <div class="analytics-cards">
-        <div class="stat-card"><strong>${formatNumber(totals.views)}</strong><span>Total Views</span></div>
-        <div class="stat-card"><strong>${formatNumber(totals.likes)}</strong><span>Likes</span></div>
+        <div class="stat-card"><strong>${formatNumber(totals.views)}</strong><span>${periodMetrics ? '30-Day Views' : 'Public Views'}</span></div>
+        <div class="stat-card"><strong>${formatNumber(totals.likes)}</strong><span>Public Likes</span></div>
         <div class="stat-card"><strong>${formatNumber(totals.comments)}</strong><span>Comments</span></div>
         <div class="stat-card"><strong>${formatNumber(totals.estimatedMinutesWatched)}</strong><span>Est. Minutes</span></div>
         <div class="stat-card"><strong>${formatNumber(totals.subscribersGained)}</strong><span>New Subs</span></div>
       </div>
-      <p class="meta">Last updated: ${new Date(analytics.lastUpdated).toLocaleString()}</p>
+      <p class="meta">Last updated: ${analytics.lastUpdated ? new Date(analytics.lastUpdated).toLocaleString() : 'unknown'}</p>
     `;
 
     let html = '<table class="analytics-table"><thead><tr>';
-    html += '<th>Video</th><th>Type</th><th>Views</th><th>Likes</th><th>Comments</th><th>Watch (min)</th><th>Avg s</th><th>+Subs</th>';
+    html += `<th>Video</th><th>Type</th><th>${periodMetrics ? '30-day views' : 'Public views'}</th><th>Public likes</th><th>Public comments</th><th>30-day watch (min)</th><th>${periodMetrics ? '30-day avg s' : 'Mixed-period avg (legacy)'}</th><th>30-day +Subs</th>`;
     html += '</tr></thead><tbody>';
 
     sorted.forEach((v) => {
@@ -808,7 +806,7 @@
   function renderReleases() {
     const container = document.getElementById('release-list');
     if (!data.releases || !data.releases.length) {
-      container.innerHTML = '<p class="meta">No releases planned yet. Use New Song or Release Plan to create one.</p>';
+      container.innerHTML = '<p class="meta">No releases planned yet. Use Create & Release Planner to create one.</p>';
       populateReleaseSelect();
       return;
     }
@@ -879,6 +877,7 @@
     const picker = document.getElementById('plan-song-picker');
     if (!picker) return;
 
+    const selectedIds = new Set(Array.from(document.querySelectorAll('.plan-song-check:checked')).map((input) => input.value));
     const available = (data.songs || []).filter((s) => !s.release_id && (s.pipeline_status || 'planned') !== 'done');
     if (!available.length) {
       picker.innerHTML = '<p class="meta">No unassigned songs available. Add songs to the Library first.</p>';
@@ -889,7 +888,7 @@
     available.forEach((song) => {
       html += `
         <label class="song-picker-item">
-          <input type="checkbox" class="plan-song-check" value="${song.id}" data-title="${escapeHtml(song.title)}">
+          <input type="checkbox" class="plan-song-check" value="${song.id}" data-title="${escapeHtml(song.title)}" ${selectedIds.has(song.id) ? 'checked' : ''}>
           <span class="song-picker-title">${escapeHtml(song.title)}</span>
           <span class="song-picker-meta">${escapeHtml((song.genres || []).join(', ') || '—')} · ${escapeHtml(getStage(song.pipeline_status).label)}</span>
         </label>
@@ -959,8 +958,26 @@
     board.innerHTML = html;
   }
 
-  function isScheduleCompleted(entry) {
-    return Object.values(entry.completed || {}).every(Boolean);
+  function syncSongProgressFromSchedule(entryId) {
+    const entry = data.schedule.find((item) => scheduleId(item) === entryId);
+    const song = entry && getSongById(entry.song_id);
+    if (!song) return;
+    const completed = scheduledPlatforms(entry).filter((platform) => isCompleted(entry, platform));
+    let stage = song.pipeline_status || 'planned';
+    if (completed.includes('youtube_short')) stage = 'short-posted';
+    if (completed.includes('youtube_lyric_video')) stage = 'lyric-posted';
+    if (isScheduleCompleted(entry)) stage = completed.includes('youtube_lyric_video') ? 'lyric-posted' : 'short-posted';
+    if (getStageIndex(stage) > getStageIndex(song.pipeline_status || 'planned')) {
+      song.pipeline_status = stage;
+      state.pipeline[song.id] = stage;
+    }
+    const taskByPlatform = { youtube_short: 'upload-yt', youtube_lyric_video: 'create-lyric', instagram_reel: 'upload-ig', facebook_reel: 'upload-fb', threads: 'upload-threads' };
+    data.releases.forEach((release) => {
+      (release.tasks || []).filter((task) => task.song_id === song.id).forEach((task) => {
+        const platform = Object.keys(taskByPlatform).find((key) => taskByPlatform[key] === task.templateId);
+        if (platform) state.tasks[task.id] = isCompleted(entry, platform);
+      });
+    });
   }
 
   function setPipelineStatus(songId, newStage) {
@@ -969,6 +986,17 @@
     song.pipeline_status = newStage;
     if (!state.pipeline) state.pipeline = {};
     state.pipeline[songId] = newStage;
+    const completedTemplates = {
+      'short-created': ['create-short'],
+      'short-scheduled': ['create-short', 'upload-yt'],
+      'short-posted': ['create-short', 'upload-yt'],
+      'lyric-created': ['create-short', 'upload-yt', 'create-lyric'],
+      'lyric-posted': ['create-short', 'upload-yt', 'create-lyric'],
+      done: ['create-short', 'upload-yt', 'create-lyric']
+    };
+    data.releases.forEach((release) => {
+      (release.tasks || []).filter((task) => task.song_id === songId && (completedTemplates[newStage] || []).includes(task.templateId)).forEach((task) => { state.tasks[task.id] = true; });
+    });
     saveState();
     renderAll();
   }
@@ -983,7 +1011,7 @@
       html += '<h3>Release checklists</h3>';
       data.releases.forEach((rel) => {
         const total = (rel.tasks || []).length;
-        const done = (rel.tasks || []).filter((t) => t.completed).length;
+        const done = (rel.tasks || []).filter((task) => isTaskCompleted(task.id, task.completed)).length;
         html += `<h4 class="release-title">${escapeHtml(rel.title)} <span class="meta">${done}/${total}</span></h4>`;
         html += '<ul class="task-list">';
         (rel.tasks || []).forEach((task) => {
@@ -998,7 +1026,7 @@
       html += '<h3>Admin tasks</h3><ul class="task-list">';
       data.tasks.forEach((task) => {
         const completed = isTaskCompleted(task.id, task.completed);
-        html += `<li><input type="checkbox" class="task-check" data-id="${task.id}" ${completed ? 'checked' : ''}><span class="${completed ? 'completed' : ''}">${task.label}</span></li>`;
+        html += `<li><input type="checkbox" class="task-check" data-id="${task.id}" ${completed ? 'checked' : ''}><span class="${completed ? 'completed' : ''}">${escapeHtml(task.label)}</span></li>`;
       });
       html += '</ul>';
     }
@@ -1009,10 +1037,15 @@
   function renderProgress() {
     let total = 0;
     let done = 0;
-    data.schedule.forEach((entry, index) => {
-      Object.keys(entry.platforms).forEach((platform) => {
+    const start = getWeekStart(new Date());
+    const end = new Date(start);
+    end.setDate(start.getDate() + 6);
+    const startStr = toISODate(start);
+    const endStr = toISODate(end);
+    data.schedule.filter((entry) => entry.date >= startStr && entry.date <= endStr).forEach((entry) => {
+      scheduledPlatforms(entry).forEach((platform) => {
         total++;
-        if (isCompleted(index, platform)) done++;
+        if (isCompleted(entry, platform)) done++;
       });
     });
     const pct = total ? Math.round((done / total) * 100) : 0;
@@ -1071,6 +1104,7 @@
 
     const platforms = getPostPlatforms();
     pendingSchedule = {
+      id: `post-${postDate}-${id}`,
       date: postDate,
       song_id: id,
       platforms,
@@ -1122,25 +1156,19 @@
       <pre>${escapeHtml(JSON.stringify(pendingRelease, null, 2) || 'none')}</pre>
       <h3>Packages</h3>
       <pre>${escapeHtml(JSON.stringify(pkgs, null, 2))}</pre>
-      <button class="save-song" id="save-song-to-json">Add to content.json and save</button>
+      <button class="save-song" id="save-song-to-json">Add to session and download content.json</button>
     `;
   }
 
   function buildPlanPrompt(type, concept, genre, moods, themes, refs, avoid, selectedSongs) {
-    const selectedText = selectedSongs.length
-      ? selectedSongs.map((s) => `- ${s.title} (${(s.genres || []).join(', ')})`).join('\n')
-      : 'No existing songs selected — generate all tracks from the concept.';
-
-    let prompt = '';
-    if (type === 'single') {
-      prompt = `Create a concept for one single song by VMOne (an independent rap/pop/dance artist using Suno).\n\n${selectedSongs.length ? 'Selected song: ' + selectedSongs[0].title + '\n' : ''}Song concept: ${concept}\nGenre: ${genre}\nMoods: ${moods}\nTheme words or imagery: ${themes || 'none provided'}\nReference artists or sounds: ${refs || 'none provided'}\nAvoid / IP restrictions: ${avoid || 'none'}\n\nOutput a JSON object with these keys:\n- title\n- genre\n- bpm\n- duration_in_seconds\n- hook (one catchy 1-2 line lyric)\n- title_card (big bold text for the first 1-2 seconds of a 9:16 Short)\n- story (one paragraph)\n- visual_concept (one paragraph)\n- monetization_note (safe or growth-only and why)\n- instagram_caption_question\n\nDo not use emojis. Do not include copyrighted brand names unless explicitly allowed.`;
-    } else if (type === 'ep') {
-      prompt = `Create an EP plan for VMOne (an independent rap/pop/dance artist using Suno).\n\nConcept: ${concept}\nGenre: ${genre}\nMoods: ${moods}\nTheme words or imagery: ${themes || 'none provided'}\nReference artists or sounds: ${refs || 'none provided'}\nAvoid / IP restrictions: ${avoid || 'none'}\n\nSelected songs from the catalog:\n${selectedText}\n\n${selectedSongs.length ? 'Use the selected songs as the track list if enough are provided, or fill in additional tracks to create a cohesive EP.' : 'Generate all tracks from the concept.'} Output a JSON object with:\n- ep_title\n- genre\n- mood_profile\n- total_runtime\n- lead_single (which track number, 1-based)\n- tracks: array of objects with title, role (opener/single/ballad/wildcard/closer), bpm, duration, theme, hook, monetization_note\n\nDo not use emojis. Do not include copyrighted brand names unless explicitly allowed.`;
-    } else {
-      prompt = `Create a full album plan for VMOne (an independent rap/pop/dance artist using Suno).\n\nConcept: ${concept}\nGenre: ${genre}\nMoods: ${moods}\nTheme words or imagery: ${themes || 'none provided'}\nReference artists or sounds: ${refs || 'none provided'}\nAvoid / IP restrictions: ${avoid || 'none'}\n\nSelected songs from the catalog:\n${selectedText}\n\n${selectedSongs.length ? 'Use the selected songs as the basis for the album, or expand with new tracks to create a cohesive record.' : 'Generate all tracks from the concept.'} Output a JSON object with:\n- album_title\n- slug (folder name, kebab-case)\n- genre and style notes\n- mood_profile\n- total_runtime and average track length\n- tracks: array with number, working title, role (opener/single/ballad/wildcard/closer), mood, bpm, duration, one-sentence theme, hook\n- album_story_arc (one paragraph)\n- lead_singles (track numbers)\n- recommended_tags for YouTube and Suno\n\nDo not use emojis. Do not include copyrighted brand names unless explicitly allowed.`;
-    }
-
-    return prompt;
+    const existingSongs = selectedSongs.map((song) => ({ id: song.id, title: song.title, genres: song.genres }));
+    const mode = existingSongs.length ? 'release_existing' : 'create_new';
+    const schema = {
+      schema_version: SCHEMA_VERSION,
+      release: { title: 'Release title', type, notes: 'Release concept', existing_song_ids: existingSongs.map((song) => song.id) },
+      songs: [{ title: 'New song title', genres: [genre || 'genre'], title_card: 'Short title card', hook: 'Catchiest line', lyrics: 'Full structured lyrics', suno_style_prompt: 'Production, vocal, tempo, and instrumentation prompt', notes: 'Theme and visual angle', monetization: 'monetizable', ip_note: '' }]
+    };
+    return `Create a ${type} for VMOne, an independent artist using Suno. Mode: ${mode}.\n\nConcept or story: ${concept || 'open'}\nGenre: ${genre || 'open'}\nMoods: ${moods || 'open'}\nTheme words or imagery: ${themes || 'none provided'}\nReference sounds: ${refs || 'none provided'}\nAvoid / IP restrictions: ${avoid || 'none'}\nExisting catalog songs (reference by id; do not recreate or rewrite them):\n${JSON.stringify(existingSongs, null, 2)}\n\n${existingSongs.length ? 'Build the release around those existing song IDs. Add objects to songs only for genuinely new tracks needed to complete the release.' : 'Generate all new tracks. For every track, include complete Suno-ready lyrics and a concise Suno style prompt.'}\n\nReturn only valid JSON matching this exact schema:\n${JSON.stringify(schema, null, 2)}\n\nUse release.existing_song_ids for existing tracks and songs for new tracks. Do not return markdown. Do not use copyrighted names in suno_style_prompt. Do not use emojis.`;
   }
 
   function getPlanInputs() {
@@ -1162,7 +1190,7 @@
       <h3>Copy-paste this into an AI</h3>
       <pre>${escapeHtml(prompt)}</pre>
       <button class="copy" data-label="AI prompt">Copy Prompt</button>
-      <p class="meta">Paste the AI's JSON response into Plan → From AI JSON to import the release.</p>
+      <p class="meta">Paste the response into Create & Release Planner → Import AI JSON.</p>
     `;
   }
 
@@ -1254,7 +1282,7 @@
     out.innerHTML = `
       <h3>Preview ${pendingBulkSongs.length} songs</h3>
       <pre>${escapeHtml(JSON.stringify(pendingBulkSongs, null, 2))}</pre>
-      <button class="save-bulk" id="save-bulk-songs">Add to content.json and save</button>
+      <button class="save-bulk" id="save-bulk-songs">Add to session and download content.json</button>
     `;
   }
 
@@ -1268,8 +1296,9 @@
     pendingBulkSongs.forEach((song) => {
       const existing = data.songs.find((s) => s.id === song.id);
       if (existing) {
-        if (confirm(`"${song.title}" already exists. Replace it?`)) {
-          Object.assign(existing, song);
+        if (confirm(`"${song.title}" already exists. Update its catalog details while preserving publishing data?`)) {
+          const preserved = { links: existing.links, stats: existing.stats, status: existing.status, pipeline_status: existing.pipeline_status, release_id: existing.release_id };
+          Object.assign(existing, song, preserved);
         }
       } else {
         data.songs.push(song);
@@ -1295,13 +1324,29 @@
       return;
     }
 
-    const release = obj.release || obj.ep || obj.album || { title: obj.ep_title || obj.album_title || 'Untitled', type: 'single' };
-    const type = (release.type || 'single').toLowerCase();
-    const releaseTitle = release.title || release.ep_title || release.album_title || 'Untitled';
+    if (Number(obj.schema_version) !== SCHEMA_VERSION || !obj.release || !Array.isArray(obj.songs)) {
+      alert('Unsupported release JSON. Generate a fresh prompt so the AI returns schema_version, release, and songs.');
+      return;
+    }
+    const release = obj.release;
+    const type = ['single', 'ep', 'album'].includes(String(release.type).toLowerCase()) ? String(release.type).toLowerCase() : 'single';
+    const releaseTitle = String(release.title || '').trim();
+    if (!releaseTitle) {
+      alert('The release title is required.');
+      return;
+    }
     const releaseId = type + '-' + releaseTitle.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
-
-    let rawSongs = obj.songs || obj.tracks || [];
-    if (!Array.isArray(rawSongs)) rawSongs = [rawSongs];
+    const existingSongIds = Array.isArray(release.existing_song_ids) ? release.existing_song_ids : [];
+    const missingSongIds = existingSongIds.filter((id) => !getSongById(id));
+    if (missingSongIds.length) {
+      alert(`Unknown existing song IDs: ${missingSongIds.join(', ')}`);
+      return;
+    }
+    const rawSongs = obj.songs;
+    if (rawSongs.some((track) => !String(track.title || track.working_title || '').trim())) {
+      alert('Every new song requires a title.');
+      return;
+    }
 
     const defaultPostTimes = data.settings.default_post_times;
     let nextDate = getNextAvailableDate();
@@ -1318,6 +1363,7 @@
         title_card: track.title_card || '',
         hooks: track.hook ? [track.hook] : (track.hooks || []),
         lyrics: track.lyrics || '',
+        suno_style_prompt: track.suno_style_prompt || '',
         notes: track.notes || track.theme || '',
         monetization: track.monetization || track.monetization_note || 'monetizable',
         ip_note: track.ip_note || '',
@@ -1339,6 +1385,7 @@
       });
 
       schedule.push({
+        id: `post-${nextDate}-${id}`,
         date: nextDate,
         song_id: id,
         release_id: releaseId,
@@ -1349,20 +1396,31 @@
 
       const d = new Date(nextDate + 'T00:00:00');
       d.setDate(d.getDate() + 1);
-      nextDate = toISODate(d);
+      nextDate = getNextAvailableDate(toISODate(d));
     });
 
+    existingSongIds.forEach((songId) => {
+      if (data.schedule.some((entry) => entry.song_id === songId && entry.date >= todayStr())) return;
+      const platforms = { ...defaultPostTimes };
+      if (type !== 'single') delete platforms.youtube_lyric_video;
+      schedule.push({ id: `post-${nextDate}-${songId}`, date: nextDate, song_id: songId, release_id: releaseId, platforms, hook_index: 0, completed: {} });
+      const d = new Date(nextDate + 'T00:00:00');
+      d.setDate(d.getDate() + 1);
+      nextDate = getNextAvailableDate(toISODate(d));
+    });
+
+    const releaseSongIds = existingSongIds.concat(songs.map((song) => song.id));
     const template = data.templates.find((t) => t.id === (type === 'single' ? 'single-release' : 'ep-release'));
     const steps = template ? template.steps : [];
     const tasks = [];
-    songs.forEach((song) => {
+    releaseSongIds.forEach((songId) => {
       steps.forEach((step, i) => {
         tasks.push({
-          id: `${releaseId}-${song.id}-${i}`,
+          id: `${releaseId}-${songId}-${i}`,
           templateId: step.id,
           label: step.label,
           completed: false,
-          song_id: song.id
+          song_id: songId
         });
       });
     });
@@ -1373,7 +1431,7 @@
         title: releaseTitle,
         type: type === 'ep' ? 'EP' : (type === 'album' ? 'Album' : 'Single'),
         status: 'planned',
-        songs: songs.map((s) => s.id),
+        songs: releaseSongIds,
         startDate: schedule.length ? schedule[0].date : toISODate(new Date()),
         endDate: schedule.length ? schedule[schedule.length - 1].date : toISODate(new Date()),
         notes: release.notes || '',
@@ -1388,7 +1446,7 @@
     out.innerHTML = `
       <h3>Preview release</h3>
       <pre>${escapeHtml(JSON.stringify(pendingReleaseData, null, 2))}</pre>
-      <button class="save-release" id="save-release-json">Add to content.json and save</button>
+      <button class="save-release" id="save-release-json">Add to session and download content.json</button>
     `;
   }
 
@@ -1399,12 +1457,23 @@
     }
 
     pendingReleaseData.songs.forEach((song) => {
-      const existing = data.songs.find((s) => s.id === song.id);
-      if (existing) Object.assign(existing, song);
-      else data.songs.push(song);
+      const existing = data.songs.find((item) => item.id === song.id);
+      if (existing) {
+        const preserved = { links: existing.links, stats: existing.stats, status: existing.status, pipeline_status: existing.pipeline_status };
+        Object.assign(existing, song, preserved);
+      } else {
+        data.songs.push(song);
+      }
+    });
+    pendingReleaseData.release.songs.forEach((songId) => {
+      const song = getSongById(songId);
+      if (song) song.release_id = pendingReleaseData.release.id;
     });
 
-    pendingReleaseData.schedule.forEach((s) => data.schedule.push(s));
+    pendingReleaseData.schedule.forEach((entry) => {
+      if (!data.schedule.some((item) => scheduleId(item) === scheduleId(entry))) data.schedule.push(entry);
+    });
+    normalizeSchedule();
 
     const existingRelease = data.releases.find((r) => r.id === pendingReleaseData.release.id);
     if (existingRelease) Object.assign(existingRelease, pendingReleaseData.release);
@@ -1418,10 +1487,9 @@
 
   function getMergedData() {
     const merged = JSON.parse(JSON.stringify(data));
-    state.schedule.forEach((s, index) => {
-      if (s.completed && merged.schedule[index]) {
-        Object.assign(merged.schedule[index].completed, s.completed);
-      }
+    Object.entries(state.schedule).forEach(([entryId, saved]) => {
+      const entry = merged.schedule.find((item) => scheduleId(item) === entryId);
+      if (saved.completed && entry) Object.assign(entry.completed, saved.completed);
     });
     merged.tasks.forEach((task) => {
       if (typeof state.tasks[task.id] === 'boolean') {
@@ -1430,11 +1498,14 @@
     });
     (merged.releases || []).forEach((rel) => {
       (rel.tasks || []).forEach((task) => {
-        if (typeof state.tasks[task.id] === 'boolean') {
-          task.completed = state.tasks[task.id];
-        }
+        if (typeof state.tasks[task.id] === 'boolean') task.completed = state.tasks[task.id];
       });
+      if ((rel.tasks || []).length) rel.status = rel.tasks.every((task) => task.completed) ? 'complete' : 'planned';
     });
+    merged.songs.forEach((song) => {
+      if (state.pipeline[song.id]) song.pipeline_status = state.pipeline[song.id];
+    });
+    merged.schema_version = SCHEMA_VERSION;
     return merged;
   }
 
@@ -1449,10 +1520,10 @@
     a.href = url;
     a.download = 'content.json';
     a.click();
-    URL.revokeObjectURL(url);
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
   }
 
-  async function saveSongToContentJson() {
+  function saveSongToContentJson() {
     if (!pendingSong) {
       alert('Generate a song JSON first.');
       return;
@@ -1460,8 +1531,10 @@
 
     const existingIndex = data.songs.findIndex((s) => s.id === pendingSong.id);
     if (existingIndex >= 0) {
-      if (!confirm(`A song with id "${pendingSong.id}" already exists. Replace it?`)) return;
-      data.songs[existingIndex] = pendingSong;
+      if (!confirm(`A song with id "${pendingSong.id}" already exists. Update it while preserving publishing data?`)) return;
+      const existing = data.songs[existingIndex];
+      const preserved = { links: existing.links, stats: existing.stats, status: existing.status, pipeline_status: existing.pipeline_status, release_id: existing.release_id };
+      data.songs[existingIndex] = { ...existing, ...pendingSong, ...preserved };
     } else {
       data.songs.push(pendingSong);
     }
@@ -1473,6 +1546,7 @@
       } else {
         data.schedule.push(pendingSchedule);
       }
+      normalizeSchedule();
     }
 
     if (pendingRelease) {
@@ -1489,30 +1563,8 @@
     pendingRelease = null;
 
     renderAll();
-
-    const json = getMergedJson();
-
-    if ('showSaveFilePicker' in window) {
-      try {
-        const handle = await window.showSaveFilePicker({
-          suggestedName: 'content.json',
-          types: [{ description: 'JSON files', accept: { 'application/json': ['.json'] } }]
-        });
-        const writable = await handle.createWritable();
-        await writable.write(json);
-        await writable.close();
-        alert('content.json saved. Refresh the page to load the updated file.');
-      } catch (err) {
-        if (err.name !== 'AbortError') {
-          console.error(err);
-          alert('Save failed. Falling back to download.');
-          downloadMergedContent();
-        }
-      }
-    } else {
-      alert('Your browser does not support direct file saving. A download will start instead.');
-      downloadMergedContent();
-    }
+    alert('Song added to this browser session. Replace the repository content.json with the downloaded file to make it permanent.');
+    downloadMergedContent();
   }
 
   // Global copy / checkbox event delegation
@@ -1573,15 +1625,13 @@
 
   document.body.addEventListener('change', (e) => {
     if (e.target.classList.contains('complete-check')) {
-      const index = parseInt(e.target.dataset.index, 10);
+      const entryId = e.target.dataset.entryId;
       const platform = e.target.dataset.platform;
-      setCompleted(index, platform, e.target.checked);
+      setCompleted(entryId, platform, e.target.checked);
     }
     if (e.target.classList.contains('task-check')) {
       setTaskCompleted(e.target.dataset.id, e.target.checked);
-      e.target.nextElementSibling.classList.toggle('completed', e.target.checked);
-      renderReleases();
-      renderTasks();
+      renderAll();
     }
   });
 

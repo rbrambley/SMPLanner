@@ -163,14 +163,17 @@
     </section>
 
     <section id="plan" class="tab">
-      <h2>Plan</h2>
+      <h2>Create &amp; Release Planner</h2>
+      <p class="meta"><strong>New Song</strong> creates Suno-ready music from scratch. <strong>Build Release</strong> plans a campaign using songs already in your library. <strong>Import AI JSON</strong> imports the result of either prompt.</p>
       <div class="plan-tabs">
         <button type="button" data-plan="new-song" class="active">New Song</button>
         <button type="button" data-plan="build-release">Build Release</button>
-        <button type="button" data-plan="ai-json">From AI JSON</button>
+        <button type="button" data-plan="ai-json">Import AI JSON</button>
       </div>
 
       <div id="plan-config" class="plan-config">
+        <h3>Creative brief</h3>
+        <p class="meta">For New Song, this defines the music to create. For Build Release, it defines the campaign direction and any new tracks needed to fill gaps.</p>
         <label>
           Release type
           <select id="plan-release-type">

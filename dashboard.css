@@ -425,6 +425,16 @@ footer a {
   gap: 0.5rem;
 }
 
+.calendar-entry + .calendar-entry {
+  border-top: 1px solid #374151;
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+}
+
+.calendar-four-weeks {
+  grid-template-columns: repeat(7, 1fr);
+}
+
 .day {
   background: #181b21;
   border: 1px solid #2d3139;

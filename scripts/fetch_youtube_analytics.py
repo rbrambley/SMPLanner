@@ -1,9 +1,8 @@
 #!/usr/bin/env python3
 """Daily YouTube analytics fetcher for the SMPLanner dashboard.
 
-Reads YouTube Data API v3 and YouTube Analytics API v2, then writes:
-- analytics.json (time-series + latest per video)
-- content.json (merges latest stats into each song)
+Reads YouTube Data API v3 and YouTube Analytics API v2, then writes
+analytics.json with time-series and latest metrics per video.
 
 Environment variables used:
 - GOOGLE_CLIENT_ID
@@ -16,7 +15,6 @@ import json
 import os
 import sys
 from datetime import datetime, timedelta, timezone
-from pathlib import Path
 
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
@@ -179,7 +177,8 @@ def build_video_stats(video_id, metadata, analytics_row):
     stats = meta.get('statistics', {})
     analytics = analytics_row or {}
 
-    views = int(stats.get('viewCount', 0) or 0)
+    views = int(analytics.get('views', 0) or 0)
+    public_views = int(stats.get('viewCount', 0) or 0)
     likes = int(stats.get('likeCount', 0) or 0)
     comments = int(stats.get('commentCount', 0) or 0)
     estimated = float(analytics.get('estimatedMinutesWatched', 0.0) or 0.0)
@@ -192,6 +191,7 @@ def build_video_stats(video_id, metadata, analytics_row):
 
     return {
         'views': views,
+        'publicViews': public_views,
         'likes': likes,
         'comments': comments,
         'estimatedMinutesWatched': round(estimated, 2),
@@ -230,6 +230,7 @@ def build_analytics_document(channel_id, start, end, video_ids, metadata, latest
         'lastUpdated': datetime.now(timezone.utc).isoformat(),
         'channelId': channel_id,
         'period': {'start': start, 'end': end},
+        'metricBasis': 'period-views-and-watchtime-public-engagement',
         'videos': videos,
         'channelDaily': channel_daily,
     }
@@ -246,50 +247,9 @@ def infer_video_type(title):
     return 'Unknown'
 
 
-def load_content():
-    path = Path('content.json')
-    if not path.exists():
-        return {'songs': [], 'schedule': [], 'tasks': []}
-    with open(path, 'r', encoding='utf-8') as f:
-        return json.load(f)
-
-
 def save_json(path, data):
     with open(path, 'w', encoding='utf-8') as f:
         json.dump(data, f, indent=2, ensure_ascii=False)
-
-
-def match_video_to_song(song, videos, metadata):
-    short_id = (song.get('links') or {}).get('youtube_short_id', '')
-    lyric_id = (song.get('links') or {}).get('youtube_lyric_id', '')
-    if short_id and short_id in videos:
-        return short_id
-    if lyric_id and lyric_id in videos:
-        return lyric_id
-
-    title = song.get('title', '').lower()
-    for vid, meta in metadata.items():
-        vt = meta.get('title', '').lower()
-        if title and (title in vt or vt in title):
-            return vid
-    return None
-
-
-def merge_stats_into_content(content, metadata, latest):
-    latest_by_video = {row.get('video'): row for row in latest if 'video' in row}
-    video_ids = set(metadata.keys())
-
-    for song in content.get('songs', []):
-        matched = match_video_to_song(song, video_ids, metadata)
-        if matched and matched in metadata:
-            analytics_row = latest_by_video.get(matched, {})
-            song['stats'] = build_video_stats(matched, metadata, analytics_row)
-            song['stats']['lastUpdated'] = datetime.now(timezone.utc).isoformat()
-            song['stats']['videoId'] = matched
-        elif 'stats' in song:
-            # Keep existing stats if no match; do not wipe.
-            pass
-    return content
 
 
 def main():
@@ -331,10 +291,6 @@ def main():
     save_json('analytics.json', analytics_doc)
     print('Saved analytics.json')
 
-    content = load_content()
-    content = merge_stats_into_content(content, metadata, latest)
-    save_json('content.json', content)
-    print('Saved content.json')
 
 
 if __name__ == '__main__':
