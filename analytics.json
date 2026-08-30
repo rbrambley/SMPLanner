@@ -1,20 +1,22 @@
 {
-  "lastUpdated": "2026-08-29T09:10:28.273819+00:00",
+  "lastUpdated": "2026-08-30T09:10:58.934640+00:00",
   "channelId": "UC7yY7QSCrBiY8a0ES2xQjbw",
   "period": {
-    "start": "2026-07-29",
-    "end": "2026-08-28"
+    "start": "2026-07-30",
+    "end": "2026-08-29"
   },
+  "metricBasis": "period-views-and-watchtime-public-engagement",
   "videos": [
     {
-      "videoId": "Z-kNWAqN1hY",
-      "title": "Dirty Dac - slide through Dac #dacula #dirtydac #rap #georgia #vmone #newmusic  #suno #aimusic",
-      "publishedAt": "2026-08-29T00:00:32Z",
+      "videoId": "d94cFPmTCpg",
+      "title": "Brand New Day — Spider-man hype review in a rap!   #rap #aimusic #spiderman #marvelstudios",
+      "publishedAt": "2026-08-30T00:00:15Z",
       "videoType": "Unknown",
       "latest": {
-        "views": 5,
+        "views": 0,
+        "publicViews": 44,
         "likes": 0,
-        "comments": 0,
+        "comments": 1,
         "estimatedMinutesWatched": 0.0,
         "averageViewDuration": 0.0,
         "subscribersGained": 0
@@ -22,14 +24,15 @@
       "daily": []
     },
     {
-      "videoId": "d94cFPmTCpg",
-      "title": "Brand New Day — hype is loud  #rap #aimusic #spiderman #marvelstudios #spidermanbrandnewday",
-      "publishedAt": "2026-08-28T12:23:19Z",
+      "videoId": "Z-kNWAqN1hY",
+      "title": "Dirty Dac - slide through Dac #dacula #dirtydac #rap #georgia #vmone #newmusic  #suno #aimusic",
+      "publishedAt": "2026-08-29T00:00:32Z",
       "videoType": "Unknown",
       "latest": {
         "views": 0,
+        "publicViews": 21,
         "likes": 0,
-        "comments": 0,
+        "comments": 1,
         "estimatedMinutesWatched": 0.0,
         "averageViewDuration": 0.0,
         "subscribersGained": 0
@@ -42,7 +45,8 @@
       "publishedAt": "2026-08-27T23:45:30Z",
       "videoType": "Lyric Video",
       "latest": {
-        "views": 1,
+        "views": 0,
+        "publicViews": 2,
         "likes": 0,
         "comments": 0,
         "estimatedMinutesWatched": 0.0,
@@ -57,7 +61,8 @@
       "publishedAt": "2026-08-27T16:30:04Z",
       "videoType": "Unknown",
       "latest": {
-        "views": 75,
+        "views": 0,
+        "publicViews": 85,
         "likes": 2,
         "comments": 1,
         "estimatedMinutesWatched": 0.0,
@@ -72,7 +77,8 @@
       "publishedAt": "2026-08-27T01:04:56Z",
       "videoType": "Lyric Video",
       "latest": {
-        "views": 13,
+        "views": 0,
+        "publicViews": 22,
         "likes": 0,
         "comments": 0,
         "estimatedMinutesWatched": 0.0,
@@ -87,7 +93,8 @@
       "publishedAt": "2026-08-27T00:00:27Z",
       "videoType": "Unknown",
       "latest": {
-        "views": 204,
+        "views": 0,
+        "publicViews": 211,
         "likes": 2,
         "comments": 1,
         "estimatedMinutesWatched": 0.0,
@@ -102,7 +109,8 @@
       "publishedAt": "2026-08-26T00:00:38Z",
       "videoType": "Unknown",
       "latest": {
-        "views": 68,
+        "views": 0,
+        "publicViews": 71,
         "likes": 0,
         "comments": 1,
         "estimatedMinutesWatched": 0.0,
@@ -117,7 +125,8 @@
       "publishedAt": "2026-08-25T00:00:08Z",
       "videoType": "Unknown",
       "latest": {
-        "views": 327,
+        "views": 0,
+        "publicViews": 328,
         "likes": 1,
         "comments": 1,
         "estimatedMinutesWatched": 0.0,
@@ -132,7 +141,8 @@
       "publishedAt": "2026-08-24T12:00:29Z",
       "videoType": "Unknown",
       "latest": {
-        "views": 306,
+        "views": 0,
+        "publicViews": 308,
         "likes": 3,
         "comments": 2,
         "estimatedMinutesWatched": 0.0,
@@ -147,7 +157,8 @@
       "publishedAt": "2026-08-21T00:00:05Z",
       "videoType": "Unknown",
       "latest": {
-        "views": 40,
+        "views": 0,
+        "publicViews": 41,
         "likes": 0,
         "comments": 1,
         "estimatedMinutesWatched": 0.0,
@@ -162,7 +173,8 @@
       "publishedAt": "2026-08-20T23:58:11Z",
       "videoType": "Lyric Video",
       "latest": {
-        "views": 6,
+        "views": 0,
+        "publicViews": 7,
         "likes": 0,
         "comments": 0,
         "estimatedMinutesWatched": 0.0,
@@ -177,7 +189,8 @@
       "publishedAt": "2026-08-20T08:20:12Z",
       "videoType": "Lyric Video",
       "latest": {
-        "views": 2,
+        "views": 0,
+        "publicViews": 3,
         "likes": 0,
         "comments": 0,
         "estimatedMinutesWatched": 0.0,
@@ -192,7 +205,8 @@
       "publishedAt": "2026-08-20T07:35:45Z",
       "videoType": "Unknown",
       "latest": {
-        "views": 210,
+        "views": 0,
+        "publicViews": 211,
         "likes": 3,
         "comments": 1,
         "estimatedMinutesWatched": 0.0,
@@ -207,7 +221,8 @@
       "publishedAt": "2026-08-19T10:41:22Z",
       "videoType": "Unknown",
       "latest": {
-        "views": 32,
+        "views": 0,
+        "publicViews": 34,
         "likes": 0,
         "comments": 1,
         "estimatedMinutesWatched": 0.0,
@@ -222,7 +237,8 @@
       "publishedAt": "2026-08-19T09:58:15Z",
       "videoType": "Lyric Video",
       "latest": {
-        "views": 5,
+        "views": 0,
+        "publicViews": 5,
         "likes": 0,
         "comments": 0,
         "estimatedMinutesWatched": 0.0,
@@ -237,7 +253,8 @@
       "publishedAt": "2026-08-19T09:00:37Z",
       "videoType": "Lyric Video",
       "latest": {
-        "views": 6,
+        "views": 0,
+        "publicViews": 7,
         "likes": 1,
         "comments": 1,
         "estimatedMinutesWatched": 0.0,
@@ -252,7 +269,8 @@
       "publishedAt": "2026-08-19T08:23:30Z",
       "videoType": "Unknown",
       "latest": {
-        "views": 55,
+        "views": 0,
+        "publicViews": 58,
         "likes": 0,
         "comments": 1,
         "estimatedMinutesWatched": 0.0,
@@ -263,11 +281,12 @@
     },
     {
       "videoId": "WhNlldWjsas",
-      "title": "Signal in, Signal Out #aimusic #suno #skinwalkerranch #historychannel #paranormal #newmusic",
+      "title": "Is this the craziest Skinwalker Ranch song yet? 🛸 #skinwalkerranch #music #paranormal",
       "publishedAt": "2026-08-18T09:41:36Z",
       "videoType": "Unknown",
       "latest": {
-        "views": 31,
+        "views": 0,
+        "publicViews": 35,
         "likes": 0,
         "comments": 1,
         "estimatedMinutesWatched": 0.0,
@@ -282,7 +301,8 @@
       "publishedAt": "2026-08-18T00:14:42Z",
       "videoType": "Unknown",
       "latest": {
-        "views": 474,
+        "views": 0,
+        "publicViews": 476,
         "likes": 4,
         "comments": 2,
         "estimatedMinutesWatched": 0.0,
@@ -297,7 +317,8 @@
       "publishedAt": "2026-08-16T22:44:13Z",
       "videoType": "Unknown",
       "latest": {
-        "views": 23,
+        "views": 0,
+        "publicViews": 24,
         "likes": 1,
         "comments": 1,
         "estimatedMinutesWatched": 0.0,
@@ -312,7 +333,8 @@
       "publishedAt": "2026-08-16T18:50:15Z",
       "videoType": "Lyric Video",
       "latest": {
-        "views": 6,
+        "views": 0,
+        "publicViews": 7,
         "likes": 0,
         "comments": 1,
         "estimatedMinutesWatched": 0.0,
@@ -327,7 +349,8 @@
       "publishedAt": "2026-08-15T10:21:05Z",
       "videoType": "Lyric Video",
       "latest": {
-        "views": 4,
+        "views": 0,
+        "publicViews": 4,
         "likes": 0,
         "comments": 1,
         "estimatedMinutesWatched": 0.0,
@@ -412,10 +435,10 @@
     },
     {
       "day": "2026-08-24",
-      "views": 245,
+      "views": 227,
       "likes": 2,
       "comments": 1,
-      "estimatedMinutesWatched": 20.0,
+      "estimatedMinutesWatched": 19.0,
       "subscribersGained": 1
     },
     {
@@ -432,6 +455,14 @@
       "likes": 0,
       "comments": 0,
       "estimatedMinutesWatched": 20.0,
+      "subscribersGained": 1
+    },
+    {
+      "day": "2026-08-27",
+      "views": 196,
+      "likes": 4,
+      "comments": 3,
+      "estimatedMinutesWatched": 12.0,
       "subscribersGained": 1
     }
   ]
