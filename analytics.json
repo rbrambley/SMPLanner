@@ -1,12 +1,28 @@
 {
-  "lastUpdated": "2026-09-01T09:14:13.312931+00:00",
+  "lastUpdated": "2026-09-02T09:14:04.362881+00:00",
   "channelId": "UC7yY7QSCrBiY8a0ES2xQjbw",
   "period": {
-    "start": "2026-08-01",
-    "end": "2026-08-31"
+    "start": "2026-08-02",
+    "end": "2026-09-01"
   },
   "metricBasis": "period-views-and-watchtime-public-engagement",
   "videos": [
+    {
+      "videoId": "0rWfka2XQNU",
+      "title": "You Better Kiss Your Nerd Official Lyrics",
+      "publishedAt": "2026-09-02T08:45:55Z",
+      "videoType": "Lyric Video",
+      "latest": {
+        "views": 0,
+        "publicViews": 0,
+        "likes": 0,
+        "comments": 0,
+        "estimatedMinutesWatched": 0.0,
+        "averageViewDuration": 0.0,
+        "subscribersGained": 0
+      },
+      "daily": []
+    },
     {
       "videoId": "d94cFPmTCpg",
       "title": "Brand New Day — Spider-man hype review in a rap!   #rap #aimusic #spiderman #marvelstudios",
@@ -14,7 +30,7 @@
       "videoType": "Unknown",
       "latest": {
         "views": 0,
-        "publicViews": 68,
+        "publicViews": 69,
         "likes": 0,
         "comments": 1,
         "estimatedMinutesWatched": 0.0,
@@ -94,7 +110,7 @@
       "videoType": "Unknown",
       "latest": {
         "views": 0,
-        "publicViews": 216,
+        "publicViews": 217,
         "likes": 2,
         "comments": 1,
         "estimatedMinutesWatched": 0.0,
@@ -126,7 +142,7 @@
       "videoType": "Unknown",
       "latest": {
         "views": 0,
-        "publicViews": 331,
+        "publicViews": 333,
         "likes": 1,
         "comments": 1,
         "estimatedMinutesWatched": 0.0,
@@ -286,7 +302,7 @@
       "videoType": "Unknown",
       "latest": {
         "views": 0,
-        "publicViews": 37,
+        "publicViews": 38,
         "likes": 0,
         "comments": 1,
         "estimatedMinutesWatched": 0.0,
@@ -467,7 +483,7 @@
     },
     {
       "day": "2026-08-28",
-      "views": 53,
+      "views": 52,
       "likes": 1,
       "comments": 0,
       "estimatedMinutesWatched": 7.0,
@@ -479,6 +495,14 @@
       "likes": 0,
       "comments": 2,
       "estimatedMinutesWatched": 20.0,
+      "subscribersGained": 0
+    },
+    {
+      "day": "2026-08-30",
+      "views": 37,
+      "likes": 0,
+      "comments": 0,
+      "estimatedMinutesWatched": 5.0,
       "subscribersGained": 0
     }
   ]
