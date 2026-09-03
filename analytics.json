@@ -1,9 +1,9 @@
 {
-  "lastUpdated": "2026-09-02T09:14:04.362881+00:00",
+  "lastUpdated": "2026-09-03T09:13:47.663326+00:00",
   "channelId": "UC7yY7QSCrBiY8a0ES2xQjbw",
   "period": {
-    "start": "2026-08-02",
-    "end": "2026-09-01"
+    "start": "2026-08-03",
+    "end": "2026-09-02"
   },
   "metricBasis": "period-views-and-watchtime-public-engagement",
   "videos": [
@@ -62,7 +62,7 @@
       "videoType": "Lyric Video",
       "latest": {
         "views": 0,
-        "publicViews": 2,
+        "publicViews": 5,
         "likes": 0,
         "comments": 0,
         "estimatedMinutesWatched": 0.0,
@@ -110,8 +110,8 @@
       "videoType": "Unknown",
       "latest": {
         "views": 0,
-        "publicViews": 217,
-        "likes": 2,
+        "publicViews": 220,
+        "likes": 3,
         "comments": 1,
         "estimatedMinutesWatched": 0.0,
         "averageViewDuration": 0.0,
@@ -174,7 +174,7 @@
       "videoType": "Unknown",
       "latest": {
         "views": 0,
-        "publicViews": 43,
+        "publicViews": 44,
         "likes": 0,
         "comments": 1,
         "estimatedMinutesWatched": 0.0,
@@ -249,7 +249,7 @@
     },
     {
       "videoId": "wIV6b-k_4j0",
-      "title": "The Macaw (Official Lyric Video)",
+      "title": "VMOne - The Macaw (Official Lyric Video) | Blue and Gold",
       "publishedAt": "2026-08-19T09:58:15Z",
       "videoType": "Lyric Video",
       "latest": {
@@ -270,7 +270,7 @@
       "videoType": "Lyric Video",
       "latest": {
         "views": 0,
-        "publicViews": 7,
+        "publicViews": 8,
         "likes": 1,
         "comments": 1,
         "estimatedMinutesWatched": 0.0,
@@ -503,6 +503,14 @@
       "likes": 0,
       "comments": 0,
       "estimatedMinutesWatched": 5.0,
+      "subscribersGained": 0
+    },
+    {
+      "day": "2026-08-31",
+      "views": 13,
+      "likes": 0,
+      "comments": 0,
+      "estimatedMinutesWatched": 0.0,
       "subscribersGained": 0
     }
   ]
