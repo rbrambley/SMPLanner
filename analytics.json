@@ -1,16 +1,16 @@
 {
-  "lastUpdated": "2026-09-03T09:13:47.663326+00:00",
+  "lastUpdated": "2026-09-04T09:13:14.045608+00:00",
   "channelId": "UC7yY7QSCrBiY8a0ES2xQjbw",
   "period": {
-    "start": "2026-08-03",
-    "end": "2026-09-02"
+    "start": "2026-08-04",
+    "end": "2026-09-03"
   },
   "metricBasis": "period-views-and-watchtime-public-engagement",
   "videos": [
     {
       "videoId": "0rWfka2XQNU",
       "title": "You Better Kiss Your Nerd Official Lyrics",
-      "publishedAt": "2026-09-02T08:45:55Z",
+      "publishedAt": "2026-09-03T23:00:37Z",
       "videoType": "Lyric Video",
       "latest": {
         "views": 0,
@@ -46,7 +46,7 @@
       "videoType": "Unknown",
       "latest": {
         "views": 0,
-        "publicViews": 23,
+        "publicViews": 24,
         "likes": 0,
         "comments": 1,
         "estimatedMinutesWatched": 0.0,
@@ -94,7 +94,7 @@
       "videoType": "Lyric Video",
       "latest": {
         "views": 0,
-        "publicViews": 23,
+        "publicViews": 25,
         "likes": 0,
         "comments": 0,
         "estimatedMinutesWatched": 0.0,
@@ -110,7 +110,7 @@
       "videoType": "Unknown",
       "latest": {
         "views": 0,
-        "publicViews": 220,
+        "publicViews": 224,
         "likes": 3,
         "comments": 1,
         "estimatedMinutesWatched": 0.0,
@@ -206,7 +206,7 @@
       "videoType": "Lyric Video",
       "latest": {
         "views": 0,
-        "publicViews": 5,
+        "publicViews": 6,
         "likes": 0,
         "comments": 0,
         "estimatedMinutesWatched": 0.0,
@@ -508,6 +508,14 @@
     {
       "day": "2026-08-31",
       "views": 13,
+      "likes": 0,
+      "comments": 0,
+      "estimatedMinutesWatched": 0.0,
+      "subscribersGained": 0
+    },
+    {
+      "day": "2026-09-01",
+      "views": 5,
       "likes": 0,
       "comments": 0,
       "estimatedMinutesWatched": 0.0,
